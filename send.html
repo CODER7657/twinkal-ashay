@@ -103,7 +103,7 @@ const store = {
 };
 
 // personal links always point at the short address, wherever this page is opened from
-const CANONICAL = "https://twinkalashay.pages.dev/";
+const CANONICAL = "https://twinkalashay.vercel.app/";
 $("base").value = store.get("send-base", CANONICAL);
 $("names").value = store.get("send-names", "");
 $("msgLang").value = store.get("send-lang", "auto");
