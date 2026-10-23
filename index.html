@@ -83,8 +83,6 @@
   /* the film's layer, moved as one by the scroll parallax; and a shade that sinks the bottom of the scene into the
      dark velvet the invitation stage begins with */
   .film-wrap { position: absolute; inset: 0; will-change: transform; transform-origin: 50% 40%; }
-  .scene-foot { position: absolute; left: 0; right: 0; bottom: 0; height: 24%; pointer-events: none; z-index: 1;
-    background: linear-gradient(to bottom, rgba(15, 26, 18, 0), rgba(15, 26, 18, .7) 60%, #0f1a12); }
   .scene .final { opacity: 0; pointer-events: none; }
   .show-final .scene .final { opacity: 1; }
   /* once the names arrive, the still last frame softens a touch and fades upward into the room below it
@@ -277,36 +275,31 @@
   /* ---------- the invitation: Save the Date card over the invitation card ---------- */
   /* the stage: the deep sage velvet of the earlier cover, with its fine grain, sheen and gold double frame;
      its top and bottom melt into the cream page */
+  /* one deep velvet field: a soft spotlight on the cards, darker towards the edges, a fine pile texture, and a
+     large gold T&A pressed faintly into it. No lines, no bands; the foot melts slowly into the cream page. */
   .inv { position: relative; padding: 110px 16px; display: grid; place-items: center; overflow: hidden;
     background:
-      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
-      radial-gradient(90% 60% at 30% 22%, rgba(255, 255, 255, .08), transparent 60%),
-      radial-gradient(80% 60% at 78% 92%, rgba(0, 0, 0, .32), transparent 70%),
-      linear-gradient(140deg, #2a4634 0%, #1c3326 48%, #24402f 72%, #15271b 100%); }
-  .inv::before, .inv::after { content: ""; position: absolute; left: 0; right: 0; height: 90px; pointer-events: none; z-index: 3; }
-  /* the top continues the film's dark velvet room, so the film and the stage read as one scene */
-  .inv::before { top: 0; height: 160px; background: linear-gradient(to bottom, #0f1a12 0%, rgba(15, 26, 18, .75) 35%, rgba(15, 26, 18, 0) 100%); }
-  .inv::after { bottom: 0; background: linear-gradient(to top, var(--paper), rgba(251, 250, 245, 0)); }
-  .inv-frame { position: absolute; inset: 86px 18px; pointer-events: none; border: 1px solid rgba(220, 194, 131, .55); }
-  .inv-frame::after { content: ""; position: absolute; inset: 6px; border: 1px solid rgba(220, 194, 131, .22); }
-  .inv.gs .inv-frame { inset: 70px 18px; }
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+      radial-gradient(70% 55% at 50% 47%, #33533f 0%, #24402f 40%, #182d20 72%, #0f1d14 100%); }
+  /* below the held stage (not over it): the velvet's dark edge flows slowly into the cream page */
+  .inv-tail { height: 200px; margin-top: -1px; pointer-events: none;
+    background: linear-gradient(to bottom, #182a1f 0%, #22382b 14%, #4f6656 40%, #a9b8a6 66%, #e6e9df 86%, var(--paper) 100%); }
+  .inv-mark { position: absolute; left: 50%; top: 47%; transform: translate(-50%, -50%); pointer-events: none; white-space: nowrap;
+    font-family: "Bodoni Moda", serif; font-variation-settings: "opsz" 96; font-weight: 400; font-size: min(78vw, 62svh); line-height: 1;
+    color: transparent; -webkit-text-stroke: 1px rgba(220, 194, 131, .2); letter-spacing: -.02em; }
+  .inv-mark em { font-family: "Allura", cursive; font-style: normal; font-size: .5em; padding: 0 .06em; -webkit-text-stroke-width: .8px; }
   .inv-stage { --cw: min(86vw, 400px); position: relative; display: flex; flex-direction: column; align-items: center; gap: 28px; perspective: 1800px; }
   .inv-card { position: relative; width: var(--cw); aspect-ratio: 270 / 377; border-radius: 3px; will-change: transform;
-    box-shadow: 0 30px 50px -22px rgba(0, 0, 0, .6), 0 0 0 1px rgba(220, 194, 131, .25); }
+    box-shadow: 0 30px 50px -22px rgba(0, 0, 0, .62), 0 0 0 1px rgba(226, 202, 140, .55), 0 0 0 5px rgba(226, 202, 140, .06); }
   .inv-card svg { position: relative; display: block; width: 100%; height: 100%; border-radius: 3px; }
   .inv-std { order: -1; z-index: 2; }
   .inv-main { z-index: 1; }   /* the Save the Date card always lies on top of the invitation */
   .inv-std .lift { position: absolute; inset: 5% 4%; border-radius: 3px; opacity: 0; pointer-events: none; box-shadow: 0 80px 100px -30px rgba(0, 0, 0, .75); }
-  .leaf { position: absolute; width: min(760px, 130vw); opacity: .07; pointer-events: none; will-change: transform; }
-  .leaf-a { top: 2%; left: -24%; transform: rotate(-12deg); }
-  .leaf-b { bottom: 0; right: -26%; transform: rotate(168deg); }
   @media (min-width: 760px) {
     .inv-stage { --cw: min(40vw, 420px, calc((100svh - 100px) * 270 / 377)); flex-direction: row; gap: clamp(16px, 4vw, 40px); }
   }
   /* while the scroll animation runs, the section fills the screen and is held in place (GSAP pins it) */
   .inv.gs { height: 100svh; min-height: 560px; padding: 0; }
-  .inv.gs::after { height: 60px; }
-  .inv.gs::before { height: 130px; }
   @media (max-width: 759.98px) {
     .inv.gs .inv-stage { --cw: min(80vw, 400px, calc((100svh - 150px) * 270 / 377)); display: block; width: var(--cw); height: calc(var(--cw) * 377 / 270); }
     .inv.gs .inv-card { position: absolute; inset: 0; }
@@ -363,7 +356,21 @@
     background: linear-gradient(to bottom, var(--paper) 0%, rgba(251, 250, 245, .72) 22%, rgba(251, 250, 245, .3) 50%, rgba(251, 250, 245, 0) 100%); }
   footer .so { font-family: var(--script); font-size: 34px; color: var(--gold-bright); margin: 0; }
   :lang(gu) footer .so { font-size: 24px; }
-  footer .fam { font-family: var(--display); font-size: 30px; margin: 6px 0 0; }
+  footer .fam { font-family: var(--display); font-size: clamp(30px, 8vw, 40px); margin: 6px 0 0; color: #f6eedb; }
+  /* closing: a foil monogram between fine gold rules, the sign-off, then the date and the two homes */
+  .ft-mono { display: flex; align-items: center; justify-content: center; gap: 18px; margin: 0 auto 26px; max-width: 360px; }
+  .ft-mono i { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(220, 194, 131, 0), rgba(220, 194, 131, .7)); }
+  .ft-mono i:last-child { background: linear-gradient(90deg, rgba(220, 194, 131, .7), rgba(220, 194, 131, 0)); }
+  .ft-mono span { font-family: "Bodoni Moda", serif; font-variation-settings: "opsz" 11; font-weight: 500; font-size: 46px; line-height: 1; padding-bottom: .12em;
+    background: linear-gradient(100deg, #b79f5c 0%, #f4e2a6 35%, #c5a862 55%, #f2deaa 75%, #b79f5c 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .ft-mono em { font-family: "Allura", cursive; font-style: normal; font-size: .55em; padding: 0 .12em; }
+  .ft-date { margin: 26px 0 0; font-family: var(--caps); font-weight: 600; letter-spacing: 3.5px; font-size: 13px; color: rgba(239, 230, 207, .82); }
+  .ft-date b, .ft-places b { font-weight: 400; color: var(--gold); padding: 0 10px; }
+  .ft-places { margin: 10px 0 0; font-family: var(--caps); font-weight: 600; letter-spacing: 4px; font-size: 11px; color: rgba(220, 194, 131, .7); }
+  .ft-places b { font-size: 7px; vertical-align: 2px; }
+  :lang(gu) .ft-date, :lang(gu) .ft-places { letter-spacing: .5px; font-size: 15px; }
+  .ft-date span { white-space: nowrap; }
+  @media (max-width: 520px) { .ft-date span { display: block; } .ft-date span + b { display: none; } .ft-date span:last-child { margin-top: 6px; } }
 
   /* floating quick actions */
   .quickbar {
@@ -449,7 +456,6 @@
          aria-label="A velvet ring box opens to show two engagement rings and a gold T &amp; A on the lid"></video>
   <img class="final" alt="">
   </div>
-  <div class="scene-foot" aria-hidden="true"></div>
   <div class="edges" aria-hidden="true"></div>
   <div class="shade" aria-hidden="true"></div>
   <script>
@@ -484,9 +490,7 @@
     <!-- The original card, as designed: a Save the Date card lying over the invitation. The scroll lifts it in 3D,
          slides it across, and sets the two side by side (one after the other on phones). -->
     <section class="inv" id="inv">
-      <img class="leaf leaf-a" src="assets/ghost-leaves-soft.webp" alt="" aria-hidden="true">
-      <img class="leaf leaf-b" src="assets/ghost-leaves-soft.webp" alt="" aria-hidden="true">
-      <div class="inv-frame" aria-hidden="true"></div>
+      <div class="inv-mark" aria-hidden="true">T<em>&amp;</em>A</div>
       <div class="inv-stage">
         <div class="inv-card inv-main">
           <svg viewBox="387 63 270 377" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Invitation to the engagement ceremony of Twinkal Patel and Ashay Patel, Sunday 29 November 2026, 10 am">
@@ -535,6 +539,7 @@
         </div>
       </div>
     </section>
+    <div class="inv-tail" aria-hidden="true"></div>
 
     <!-- ================= 3. TWO NAMES, ONE PROMISE ================= -->
     <section class="block">
@@ -607,8 +612,11 @@
   </div>
 
   <footer class="forest">
+    <div class="ft-mono" aria-hidden="true"><i></i><span>T<em>&amp;</em>A</span><i></i></div>
     <p class="so" data-i18n="signoff">With love,</p>
     <p class="fam" data-i18n="families">The Patel Families</p>
+    <p class="ft-date"><span data-i18n="ftDate">SUNDAY · 29 NOVEMBER 2026</span><b>·</b><span data-i18n="ftTime">10:00 AM</span></p>
+    <p class="ft-places"><span data-i18n="cityBride">BHARUCH</span><b>◆</b><span data-i18n="cityGroom">CANADA</span></p>
   </footer>
 </main>
 
@@ -657,7 +665,7 @@ const I18N = {
     detailsEyebrow: "JOIN US", detailsTitle: "The celebration", when: "DATE", time: "TIME", where: "VENUE",
     dateLongPlain: "Sunday, 29 November 2026", tba: "To be announced",
     calendar: "ADD TO CALENDAR", directions: "DIRECTIONS",
-    signoff: "With love,", families: "The Patel Families",
+    signoff: "With love,", families: "The Patel Families", ftDate: "SUNDAY · 29 NOVEMBER 2026", ftTime: "10:00 AM",
     lang: "ગુજરાતી",
   },
   gu: {
@@ -680,7 +688,7 @@ const I18N = {
     detailsEyebrow: "પધારજો", detailsTitle: "શુભ પ્રસંગ", when: "તારીખ", time: "સમય", where: "સ્થળ",
     dateLongPlain: "રવિવાર, ૨૯ નવેમ્બર ૨૦૨૬", tba: "ટૂંક સમયમાં જણાવીશું",
     calendar: "કેલેન્ડરમાં ઉમેરો", directions: "રસ્તો જુઓ",
-    signoff: "સ્નેહાધીન,", families: "પટેલ પરિવાર",
+    signoff: "સ્નેહાધીન,", families: "પટેલ પરિવાર", ftDate: "રવિવાર · ૨૯ નવેમ્બર ૨૦૨૬", ftTime: "સવારે ૧૦:૦૦",
     lang: "English",
   },
 };
@@ -758,12 +766,12 @@ addEventListener("DOMContentLoaded", () => {
   ScrollTrigger.config({ ignoreMobileResize: true });
   sec.classList.add("gs");
   const std = sec.querySelector(".inv-std"), main = sec.querySelector(".inv-main"), lift = std.querySelector(".lift");
-  const rings = sec.querySelectorAll(".c-ring"), gem = sec.querySelector(".c-gem"), leaves = sec.querySelectorAll(".leaf");
+  const rings = sec.querySelectorAll(".c-ring"), gem = sec.querySelector(".c-gem");
   gsap.matchMedia().add({ wide: "(min-width: 760px)", narrow: "(max-width: 759.98px)" }, ctx => {
     const wide = ctx.conditions.wide;
     const tl = gsap.timeline({ defaults: { ease: "none" }, scrollTrigger: {
       trigger: sec, start: "top top", end: () => "+=" + innerHeight * (wide ? 1.9 : 2.3),
-      pin: true, scrub: RENDER ? true : .8, anticipatePin: 1, invalidateOnRefresh: true } });
+      pin: true, scrub: RENDER ? true : .35, anticipatePin: 1, invalidateOnRefresh: true, fastScrollEnd: true } });
     // 1. the card arrives tilted on the table and straightens to face the guest; the rings draw themselves
     tl.fromTo(std, { rotationX: 18, rotationZ: -4, y: 70, scale: .9 }, { rotationX: 0, rotationZ: 0, y: 0, scale: 1, duration: 1, ease: "power2.out" }, 0)
       .fromTo(rings, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: .8, stagger: .15 }, .25)
@@ -791,17 +799,7 @@ addEventListener("DOMContentLoaded", () => {
         .to(main, { scale: 1, y: 0, duration: 1.4, ease: "power2.out" }, 2.4);
     }
     tl.to({}, { duration: .5 });
-    // the watercolour leaves drift at different depths for a sense of space
-    tl.fromTo(leaves[0], { yPercent: 14 }, { yPercent: -20, duration: tl.duration() }, 0)
-      .fromTo(leaves[1], { yPercent: -10 }, { yPercent: 18, duration: tl.duration() }, 0);
   });
-  // leaving the film: it drifts down and back with a slight zoom while the names lift away, like a camera
-  // moving on to the cards (only once the film has ended, so playback is never touched)
-  const scene = document.getElementById("scene");
-  gsap.to(".film-wrap", { yPercent: 12, scale: 1.05, ease: "none",
-    scrollTrigger: { trigger: scene, start: "top top", end: "bottom top", scrub: true } });
-  gsap.to(".scene-ui", { yPercent: -30, autoAlpha: 0, ease: "none",
-    scrollTrigger: { trigger: scene, start: "15% top", end: "75% top", scrub: true } });
   document.addEventListener("named", () => ScrollTrigger.refresh());
 });
 
