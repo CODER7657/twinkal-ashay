@@ -75,7 +75,7 @@
   .pre, .post { transition: opacity .9s ease, transform .9s ease; }
   .post { position: absolute; left: 0; right: 0; bottom: 0; opacity: 0; transform: translateY(16px); pointer-events: none; }
   .opened .pre { opacity: 0; transform: translateY(-10px); pointer-events: none; }
-  .opened .post { opacity: 1; transform: none; pointer-events: auto; }
+  .opened .post { opacity: 1; transform: none; pointer-events: auto; transition-delay: 2.9s; transition-duration: 1.2s; }
   .kicker { font-family: var(--caps); font-weight: 600; letter-spacing: 3px; font-size: 13px; color: var(--gold-bright); margin: 0 0 14px; text-transform: uppercase; }
   :lang(gu) .kicker { letter-spacing: .5px; font-size: 15px; }
   .guest-name { font-family: "Allura", "Noto Serif Gujarati", cursive; font-size: clamp(40px, 11vw, 64px); line-height: 1.1; margin: 0 0 6px; color: var(--gold-bright); text-shadow: 0 2px 18px rgba(0, 0, 0, .45); overflow-wrap: anywhere; }
@@ -248,7 +248,7 @@
     .invite-card { padding: 96px 60px 84px; }
   }
   .still .topbar, .still .hint, .still .scroll-cue, .still .quickbar { display: none; }
-  .still .pre, .still .post { transition: none; }
+  .still .pre, .still .post { transition: none !important; }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
     .rv { opacity: 1; transform: none; }
@@ -689,7 +689,7 @@ let opened = false;
 function openBox() {
   if (opened) return; opened = true;
   document.getElementById("scene").classList.add("opened");
-  setTimeout(() => { document.body.classList.remove("locked"); scrollTo(0, 0); }, 1800);
+  setTimeout(() => { document.body.classList.remove("locked"); scrollTo(0, 0); }, 3600);
   setMusic(true);
   document.dispatchEvent(new Event("openbox"));
 }
@@ -718,7 +718,7 @@ setTimeout(showFallback, 7000);
   let rsvpInView = false;
   const update = () => bar.classList.toggle("show", opened && !rsvpInView);
   new IntersectionObserver(([e]) => { rsvpInView = e.isIntersecting; update(); }, { threshold: .25 }).observe(rsvpEl);
-  document.addEventListener("openbox", () => setTimeout(update, 2600));
+  document.addEventListener("openbox", () => setTimeout(update, 4400));
   const go = el => el.scrollIntoView({ behavior: "smooth", block: "start" });
   document.getElementById("qbRsvp").addEventListener("click", () => {
     go(rsvpEl);
@@ -893,25 +893,31 @@ const lidSeam = goldFrame(); lidSeam.position.set(0, .005, D / 2); hinge.add(lid
 // the lid's frame faces the glow once open, so it gets a softer, satin-finish gold
 lidSeam.material = new THREE.MeshPhysicalMaterial({ color: 0xa8843f, metalness: 1, roughness: .58, envMapIntensity: .55 });
 
-// gold-foil monogram pressed into the lid
-const monoCanvas = document.createElement("canvas"); monoCanvas.width = monoCanvas.height = 512;
-const monoTex = new THREE.CanvasTexture(monoCanvas); monoTex.anisotropy = 4;
-const mono = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 1.1), new THREE.MeshPhysicalMaterial({
+// both names stamped in gold foil on top of the lid
+const monoCanvas = document.createElement("canvas"); monoCanvas.width = 1024; monoCanvas.height = 880;
+const monoTex = new THREE.CanvasTexture(monoCanvas); monoTex.anisotropy = 8;
+const mono = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 1.46), new THREE.MeshPhysicalMaterial({
   map: monoTex, color: 0xf6d488, metalness: .85, roughness: .22, transparent: true, alphaTest: .05, envMapIntensity: 1.8,
-  emissive: 0x6b4f17, emissiveMap: monoTex, emissiveIntensity: .55,
+  emissive: 0x6b4f17, emissiveMap: monoTex, emissiveIntensity: .6,
 }));
 mono.rotation.x = -Math.PI / 2;
 mono.position.set(0, LID_H + .025, D / 2);
 hinge.add(mono);
-function drawMono() {
-  const g = monoCanvas.getContext("2d"); g.clearRect(0, 0, 512, 512);
+function drawMono(lang) {
+  const g = monoCanvas.getContext("2d"), w = 1024, h = 880, gu = lang === "gu";
+  g.clearRect(0, 0, w, h);
   g.strokeStyle = g.fillStyle = "#fff";
-  g.lineWidth = 5; g.beginPath(); g.arc(256, 256, 236, 0, Math.PI * 2); g.stroke();
-  g.lineWidth = 2; g.beginPath(); g.arc(256, 256, 218, 0, Math.PI * 2); g.stroke();
-  g.textAlign = "center"; g.textBaseline = "middle";
-  g.font = '400 210px "Bodoni Moda"'; g.fillText("T", 190, 250);
-  g.font = '170px "Allura"'; g.fillText("&", 262, 300);
-  g.font = '400 210px "Bodoni Moda"'; g.fillText("A", 330, 262);
+  g.lineWidth = 5; g.strokeRect(40, 40, w - 80, h - 80);
+  g.lineWidth = 2; g.strokeRect(62, 62, w - 124, h - 124);
+  g.textAlign = "center"; g.textBaseline = "alphabetic";
+  g.font = gu ? '600 150px "Noto Serif Gujarati"' : '230px "Allura"';
+  g.fillText(gu ? "ટ્વિંકલ" : "Twinkal", w / 2, gu ? 330 : 340);
+  g.font = gu ? '400 90px "Noto Serif Gujarati"' : '140px "Allura"';
+  g.fillText("&", w / 2, gu ? 470 : 480);
+  g.font = gu ? '600 150px "Noto Serif Gujarati"' : '230px "Allura"';
+  g.fillText(gu ? "આશય" : "Ashay", w / 2, gu ? 650 : 660);
+  g.font = gu ? '400 46px "Noto Serif Gujarati"' : '600 46px "Cormorant SC"';
+  g.fillText(gu ? "૨૯ · ૧૧ · ૨૦૨૬" : "29 · 11 · 2026", w / 2, 770);
   monoTex.needsUpdate = true;
 }
 
@@ -927,15 +933,16 @@ function drawLiner(lang) {
   g.lineWidth = 1.5; g.strokeRect(80, 80, w - 160, h - 160);
   g.textAlign = "center"; g.fillStyle = "#7a5c22";
   g.shadowColor = "rgba(255,240,200,.6)"; g.shadowOffsetY = 2; g.shadowBlur = 2;
+  // names sit in the upper half: the lifted ring floats in front of the lower half
   const gu = lang === "gu";
-  g.font = gu ? '600 120px "Noto Serif Gujarati"' : '150px "Allura"';
-  g.fillText(gu ? "ટ્વિંકલ" : "Twinkal", w / 2, gu ? 360 : 360);
-  g.font = gu ? '400 70px "Noto Serif Gujarati"' : '110px "Allura"';
-  g.fillText("&", w / 2, gu ? 480 : 480);
-  g.font = gu ? '600 120px "Noto Serif Gujarati"' : '150px "Allura"';
-  g.fillText(gu ? "આશય" : "Ashay", w / 2, gu ? 640 : 640);
-  g.font = gu ? '400 40px "Noto Serif Gujarati"' : '600 38px "Cormorant SC"';
-  g.fillText(gu ? "૨૯ · ૧૧ · ૨૦૨૬" : "29 · 11 · 2026", w / 2, 760);
+  g.font = gu ? '600 96px "Noto Serif Gujarati"' : '124px "Allura"';
+  g.fillText(gu ? "ટ્વિંકલ" : "Twinkal", w / 2, 195);
+  g.font = gu ? '400 56px "Noto Serif Gujarati"' : '84px "Allura"';
+  g.fillText("&", w / 2, 262);
+  g.font = gu ? '600 96px "Noto Serif Gujarati"' : '124px "Allura"';
+  g.fillText(gu ? "આશય" : "Ashay", w / 2, 345);
+  g.font = gu ? '400 34px "Noto Serif Gujarati"' : '600 32px "Cormorant SC"';
+  g.fillText(gu ? "૨૯ · ૧૧ · ૨૦૨૬" : "29 · 11 · 2026", w / 2, 405);
   linerTex.needsUpdate = true;
 }
 const liner = new THREE.Mesh(new THREE.PlaneGeometry(W - .3, D - .3), new THREE.MeshPhysicalMaterial({ map: linerTex, roughness: .6, sheen: .5, sheenColor: new THREE.Color(0xfff1d8), envMapIntensity: .35 }));
@@ -946,8 +953,8 @@ const fontsReady = Promise.all([
   document.fonts.load('150px "Allura"'), document.fonts.load('600 38px "Cormorant SC"'), document.fonts.load('600 120px "Noto Serif Gujarati"'),
   document.fonts.load('400 210px "Bodoni Moda"'),
 ]).catch(() => {});
-fontsReady.then(() => { drawLiner(document.documentElement.lang); drawMono(); });
-document.addEventListener("langchange", e => fontsReady.then(() => drawLiner(e.detail)));
+fontsReady.then(() => { drawLiner(document.documentElement.lang); drawMono(document.documentElement.lang); });
+document.addEventListener("langchange", e => fontsReady.then(() => { drawLiner(e.detail); drawMono(e.detail); }));
 
 /* ---------- the rings ---------- */
 const R = .42;
@@ -1027,18 +1034,15 @@ shadow.rotation.x = -Math.PI / 2; shadow.position.y = .002; box.add(shadow);
 /* ---------- poses ---------- */
 const CUSHION_TOP = BASE_H + .2;
 const SLOT_Y = CUSHION_TOP + R - .26;
-const SHOW_Y = BASE_H + D + .72;   // floats above the open lid, so the names on the lining stay visible
 function lerp(a, b, k) { return a + (b - a) * k; }
-const ease = k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
-const easeOutBack = k => { const c1 = 1.4, c3 = c1 + 1; return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2); };
+const clamp01 = k => Math.min(1, Math.max(0, k));
+const smooth = k => { k = clamp01(k); return k * k * k * (k * (k * 6 - 15) + 10); };   // smootherstep: no jerk at either end
+const phase = (t, start, len) => smooth((t - start) / len);
 
-function setRings(k) {          // 0 = tucked in the cushion, 1 = floating and interlocked
-  pair.position.y = lerp(SLOT_Y, SHOW_Y, k);
-  ringHer.position.x = lerp(-.42, -.2, k);
-  ringHis.position.x = lerp(.42, .2, k);
-  ringHis.rotation.y = lerp(0, Math.PI / 2, k);
-}
-setRings(0);
+// her ring lifts out of the cushion towards the guest; his band stays tucked in
+const HER_SLOT = new THREE.Vector3(-.42, SLOT_Y, 0), HER_SHOW = new THREE.Vector3(0, SLOT_Y + .22, 1.15);
+ringHer.position.copy(HER_SLOT);
+ringHis.position.set(.42, SLOT_Y, 0);
 
 /* ---------- camera framing ----------
    The subject is framed by height and then shifted up with a view offset,
@@ -1052,12 +1056,12 @@ function resize() {
   const w = sceneEl.clientWidth, h = sceneEl.clientHeight;
   renderer.setSize(w, h, false);
   camera.aspect = w / h;
-  // the open scene spans ~4.4 units (box + rings above the lid); fit it into the top ~58% of the screen
-  // on tall phones the width is the limit: the swaying box needs ~3.6 units across, the open scene ~3.4
+  // closed: the swaying box needs ~3.6 units across. Open: box + raised lid + lifted ring span ~2.8 units
+  // high and ~2.6 across, so the camera ends up a little closer: a gentle zoom-in as it opens.
   const halfTan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
   const byWidth = need => need / (2 * halfTan * camera.aspect);
-  camClosed = orbit(new THREE.Vector3(0, .75, 0), 26, Math.max(10.2, byWidth(3.6)));
-  camOpen = orbit(new THREE.Vector3(0, 2.3, 0), 10, Math.max(16.2, byWidth(3.4)));
+  camClosed = orbit(new THREE.Vector3(0, .75, 0), 26, Math.max(10.6, byWidth(3.6)));
+  camOpen = orbit(new THREE.Vector3(0, 1.38, 0), 14, Math.max(9.6, byWidth(3.05)));
   camera.setViewOffset(w, h, 0, h * .17, w, h);
   camera.updateProjectionMatrix();
 }
@@ -1071,7 +1075,7 @@ if (root.classList.contains("still")) openT = 10;
 canvas.addEventListener("pointerdown", e => { dragging = true; lastX = e.clientX; });
 addEventListener("pointerup", () => { dragging = false; });
 canvas.addEventListener("pointermove", e => {
-  if (!dragging || openT < 2.6) return;
+  if (!dragging || openT < 3.4) return;
   const dx = e.clientX - lastX; lastX = e.clientX;
   dragVel = dx * .008; spin += dragVel;
 });
@@ -1099,23 +1103,30 @@ function loop() {
   frames++;
 
   if (openT >= 0) openT += dt;
-  const lidK = openT < 0 ? 0 : Math.min(1, openT / 1.7);
-  const ringK = openT < 0 ? 0 : ease(Math.min(1, Math.max(0, (openT - 1.1) / 1.9)));
-  const camK = openT < 0 ? 0 : ease(Math.min(1, openT / 3));
+  const T = openT;
+  // one continuous timeline, every stage eased with smootherstep so nothing starts or stops abruptly
+  const turnK = T < 0 ? 0 : phase(T, 0, 1.4);          // box turns to face the guest
+  const camK = T < 0 ? 0 : phase(T, 0, 4.4);           // slow zoom-in across the whole opening
+  const lidK = T < 0 ? 0 : phase(T, .5, 2.1);          // lid opens
+  const liftK = T < 0 ? 0 : phase(T, 2.2, 2.0);        // ring rises out of the cushion
+  const settle = T < 0 ? 0 : phase(T, 3.6, 1.6);       // gentle sway fades in once it has risen
 
-  // closed: the box sways gently and the lid "breathes"
-  const idle = openT < 0 ? 1 : Math.max(0, 1 - openT / 1.2);
+  // closed: the box sways slowly and the lid "breathes"
+  const idle = 1 - turnK;
   box.rotation.y = lerp(0, -.42 + Math.sin(time * .5) * .12, idle);
   box.position.y = Math.sin(time * 1.1) * .03 * idle;
-  hinge.rotation.x = openT < 0 ? -Math.max(0, Math.sin(time * 1.6)) * .03 : -easeOutBack(lidK) * 1.92;
-  glow.intensity = lerp(0, 1.8, Math.min(1, lidK * 1.4)) * (1 - ringK * .4);
+  const breathe = T < 0 ? Math.max(0, Math.sin(time * 1.6)) * .03 : 0;
+  hinge.rotation.x = -(breathe + lidK * 1.92);
+  glow.intensity = 1.6 * lidK * (1 - .35 * liftK);
 
-  setRings(ringK);
+  // her ring: out of the slot, up and towards the guest, turning a little as it comes
+  ringHer.position.lerpVectors(HER_SLOT, HER_SHOW, liftK);
+  ringHer.position.y += Math.sin(time * 1.2) * .025 * settle;
+  if (!dragging) { dragVel *= .94; spin += dragVel; }
+  ringHer.rotation.y = lerp(0, -.5, liftK) + Math.sin((T - 3.6) * .8) * .32 * settle + (spin + .55) * settle;
+  ringHer.rotation.x = .16 * liftK;                    // tip the diamond slightly towards the guest
   pair.visible = hinge.rotation.x < -.35;   // inside the lid's hollow until it opens
-  if (!dragging) { dragVel *= .95; spin += dragVel; }
-  spin += dt * .35 * ringK;
-  pair.rotation.y = ringK > 0 ? spin * ringK : 0;
-  pair.position.y += Math.sin(time * 1.3) * .04 * ringK;
+  const ringK = liftK;
 
   // camera
   tmpV.lerpVectors(camClosed.pos, camOpen.pos, camK);
