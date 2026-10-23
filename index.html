@@ -95,7 +95,9 @@
   /* only the settling move animates; the film starts full-screen without any zoom on load */
   .scene.settle .film, .scene.settle .final { transition: transform 1.5s cubic-bezier(.6, 0, .25, 1), opacity .8s ease; }
   .scene.full .film, .scene.full .final { transform: translate(-50%, var(--full-y, 0px)) scale(var(--full-s, 1)); }
-  .scene.full .scene-ui { top: calc(env(safe-area-inset-top) + 8svh); bottom: auto; text-shadow: 0 1px 12px rgba(0, 0, 0, .6); }
+  @media (min-aspect-ratio: 801/1000) {
+    .scene.full .scene-ui { top: calc(env(safe-area-inset-top) + 8svh); bottom: auto; text-shadow: 0 1px 12px rgba(0, 0, 0, .6); }
+  }
   .scene .final { opacity: 0; pointer-events: none; }
   .show-final .scene .final { opacity: 1; }
   /* only shown if a guest taps before the film has arrived on a slow connection */
@@ -117,6 +119,8 @@
       --top: calc(env(safe-area-inset-top) + 40px);
       --fh: min(100vw, 60svh); --fw: var(--fh); }
     .veil { display: none; }
+    /* the glide to the centre fits inside the pause after the tap */
+    .scene.settle .film, .scene.settle .final { transition: transform 1.1s cubic-bezier(.6, 0, .25, 1), opacity .8s ease; }
     /* phones: the square spans the width, so only its top and bottom melt away */
     .scene .film, .scene .final {
       -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 13%, #000 80%, transparent 100%);
@@ -683,8 +687,7 @@ addEventListener("scroll", () => { if (document.body.classList.contains("locked"
 const html = document.documentElement;
 const film = document.getElementById("film");
 const finalImg = document.querySelector(".scene .final");
-// ms after the film starts: the names arrive below the film once "T&A" is clear on the lid
-const NAMES_AT = 4300;
+const HOLD = 1200;   // ms of stillness after the tap, before the lid starts to move (covers the phone glide)
 let opened = false, started = false, filmFailed = false;
 film.addEventListener("error", () => { filmFailed = true; });
 [...film.querySelectorAll("source")].pop().addEventListener("error", () => { filmFailed = true; });
@@ -695,52 +698,53 @@ function showFinal() {
   const done = () => html.classList.add("show-final");
   if (finalImg.complete) done(); else { finalImg.addEventListener("load", done, { once: true }); finalImg.addEventListener("error", done, { once: true }); }
 }
-// names, scroll and the RSVP bar follow the film itself, not the tap, so a slow start never puts them out of step
+// names, scroll and the RSVP bar come after the whole film, once it has zoomed out
 function reveal() {
-  if (document.getElementById("scene").classList.contains("named")) return;
-  document.getElementById("scene").classList.add("named");
+  if (sceneEl.classList.contains("named")) return;
+  sceneEl.classList.add("named");
   document.body.classList.remove("locked"); scrollTo(0, 0);
   document.dispatchEvent(new Event("named"));
 }
-// delay: ms until the names, or null when the film's end brings them in
-function begin(delay) {
+function begin() {
   if (started) return; started = true;
   html.classList.remove("buffering");
   document.dispatchEvent(new Event("openbox"));
-  if (delay !== null) setTimeout(reveal, delay);
 }
-function fallBack() { film.pause(); showFinal(); document.getElementById("scene").classList.remove("full"); begin(400); }
-// wide screens play the film full-screen and bring the names in once it has settled back into its frame;
-// phones already show it edge to edge, with the names below it from the moment "T&A" is clear
-const FULL = film.dataset.cut === "wide" && !new URLSearchParams(location.search).has("still");
+
+// The film has the screen to itself while it plays: full-screen on wide screens (from the start), centred on
+// phones (glides there on the tap). When it ends it zooms out into its frame and the names rise below it.
+// Every move happens while the film is paused, so none of them costs a frame of playback.
 const sceneEl = document.getElementById("scene");
+const WIDE = film.dataset.cut === "wide", STILL = new URLSearchParams(location.search).has("still");
 function fitFull() {
   const w = film.offsetWidth, h = film.offsetHeight, H = sceneEl.clientHeight;
-  sceneEl.style.setProperty("--full-s", Math.max(innerWidth / w, H / h).toFixed(4));
+  sceneEl.style.setProperty("--full-s", (WIDE ? Math.max(innerWidth / w, H / h) : 1).toFixed(4));
   sceneEl.style.setProperty("--full-y", (H / 2 - film.offsetTop - h / 2).toFixed(1) + "px");
 }
-if (FULL) { fitFull(); sceneEl.classList.add("full"); addEventListener("resize", fitFull); }
-film.addEventListener("playing", () => begin(FULL ? null : NAMES_AT));
-// the settle starts in the film's last second, so the move and its final frames flow as one
-function settle() {
-  if (!sceneEl.classList.contains("full")) return;
+fitFull(); addEventListener("resize", fitFull);
+if (WIDE && !STILL) sceneEl.classList.add("full");
+function zoomOut() {
   sceneEl.classList.add("settle"); sceneEl.classList.remove("full");
   setTimeout(reveal, 700);
 }
-if (FULL) film.addEventListener("timeupdate", () => { if (film.duration && film.currentTime > film.duration - 1.1) settle(); });
-film.addEventListener("ended", () => { showFinal(); if (FULL) settle(); });
-
+function fallBack() { film.pause(); showFinal(); begin(); zoomOut(); }
+film.addEventListener("playing", begin);
+film.addEventListener("ended", () => { showFinal(); zoomOut(); });
 
 function openBox() {
   if (opened) return; opened = true;
-  document.getElementById("scene").classList.add("opened");
+  sceneEl.classList.add("opened");
   setMusic(true);
   if (filmFailed) return fallBack();
-  const p = film.play();               // inside the tap, so every phone allows it
-  if (p && p.catch) p.catch(fallBack);
+  if (!WIDE) sceneEl.classList.add("settle", "full");     // phones: the box glides to the centre
+  // start playback inside the tap (so every phone allows it), hold on the first frame, then let it run
+  const go = () => { const q = film.play(); if (q && q.catch) q.catch(fallBack); };
+  const p = film.play();
+  const hold = () => { film.pause(); film.currentTime = 0; setTimeout(go, HOLD); };
+  if (p && p.then) p.then(hold, fallBack); else hold();
   if (film.readyState < 3) {           // slow connection: a soft "T & A" while it arrives, then carry on regardless
     html.classList.add("buffering");
-    setTimeout(() => { if (!started) fallBack(); }, 6000);
+    setTimeout(() => { if (!started) fallBack(); }, 6000 + HOLD);
   }
 }
 document.getElementById("openBtn").addEventListener("click", openBox);
@@ -749,8 +753,8 @@ film.addEventListener("click", openBox);
 if (new URLSearchParams(location.search).has("still")) {
   html.classList.add("still");
   opened = true; film.preload = "none";
-  document.getElementById("scene").classList.add("opened");
-  showFinal(); begin(0);
+  sceneEl.classList.add("opened");
+  showFinal(); begin(); reveal();
 }
 
 /* ---------- floating RSVP / Location bar ---------- */
