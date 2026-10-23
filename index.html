@@ -47,7 +47,8 @@
   }
   :lang(gu) { --serif: "Noto Serif Gujarati", serif; --display: "Noto Serif Gujarati", serif; --caps: "Noto Serif Gujarati", serif; --script: "Noto Serif Gujarati", serif; }
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; scrollbar-width: none; }
+  html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }   /* full-screen invitation: no desktop scrollbar strip */
   body { margin: 0; background: var(--forest); color: var(--ink); font-family: var(--serif); overflow-x: hidden; }
   body.locked { overflow: hidden; height: 100svh; }
   img { max-width: 100%; display: block; }
@@ -199,6 +200,9 @@
     -webkit-background-clip: text; background-clip: text; color: transparent; animation: foil 9s linear infinite paused;
     filter: drop-shadow(0 2px 10px rgba(0, 0, 0, .55)); }
   .show-final .hero-names { animation-play-state: running; }
+  /* the gold foil is painted inside the text's box, so give the tails of y and g room below it (and take the
+     same space back so nothing moves) */
+  .hero-names, .post .hero-names span { padding-bottom: .2em; margin-bottom: -.2em; }
   .opened .open-btn::after { animation: none; }
   :lang(gu) .hero-names { font-size: clamp(38px, 11vw, 80px); line-height: 1.25; }
   .hero-names em { font-family: var(--script); font-style: normal; font-size: .62em; padding: 0 .12em; }
@@ -409,6 +413,7 @@
     }
   .still .topbar, .still .hint, .still .scroll-cue, .still .quickbar { display: none; }
   .still .pre, .still .post, .still .final { transition: none !important; }
+  .render .topbar, .render .quickbar, .render .scroll-cue, .render .hint { display: none !important; }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
     .rv { opacity: 1; transform: none; }
@@ -747,6 +752,9 @@ addEventListener("DOMContentLoaded", () => {
   const sec = document.getElementById("inv");
   if (!window.gsap || !window.ScrollTrigger || html.classList.contains("still") || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   gsap.registerPlugin(ScrollTrigger);
+  // ?render: used to record the invitation video frame by frame; the scroll drives every move instantly
+  const RENDER = new URLSearchParams(location.search).has("render");
+  if (RENDER) html.classList.add("render");
   ScrollTrigger.config({ ignoreMobileResize: true });
   sec.classList.add("gs");
   const std = sec.querySelector(".inv-std"), main = sec.querySelector(".inv-main"), lift = std.querySelector(".lift");
@@ -755,7 +763,7 @@ addEventListener("DOMContentLoaded", () => {
     const wide = ctx.conditions.wide;
     const tl = gsap.timeline({ defaults: { ease: "none" }, scrollTrigger: {
       trigger: sec, start: "top top", end: () => "+=" + innerHeight * (wide ? 1.9 : 2.3),
-      pin: true, scrub: .8, anticipatePin: 1, invalidateOnRefresh: true } });
+      pin: true, scrub: RENDER ? true : .8, anticipatePin: 1, invalidateOnRefresh: true } });
     // 1. the card arrives tilted on the table and straightens to face the guest; the rings draw themselves
     tl.fromTo(std, { rotationX: 18, rotationZ: -4, y: 70, scale: .9 }, { rotationX: 0, rotationZ: 0, y: 0, scale: 1, duration: 1, ease: "power2.out" }, 0)
       .fromTo(rings, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: .8, stagger: .15 }, .25)
@@ -790,10 +798,10 @@ addEventListener("DOMContentLoaded", () => {
   // leaving the film: it drifts down and back with a slight zoom while the names lift away, like a camera
   // moving on to the cards (only once the film has ended, so playback is never touched)
   const scene = document.getElementById("scene");
-  gsap.to(".film-wrap", { yPercent: 24, scale: 1.07, ease: "none",
+  gsap.to(".film-wrap", { yPercent: 12, scale: 1.05, ease: "none",
     scrollTrigger: { trigger: scene, start: "top top", end: "bottom top", scrub: true } });
-  gsap.to(".scene-ui", { yPercent: -40, autoAlpha: 0, ease: "none",
-    scrollTrigger: { trigger: scene, start: "top top", end: "55% top", scrub: true } });
+  gsap.to(".scene-ui", { yPercent: -30, autoAlpha: 0, ease: "none",
+    scrollTrigger: { trigger: scene, start: "15% top", end: "75% top", scrub: true } });
   document.addEventListener("named", () => ScrollTrigger.refresh());
 });
 
