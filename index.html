@@ -328,6 +328,32 @@
     section.block { padding: 120px 40px; }
     .invite-card { padding: 96px 60px 84px; }
   }
+  /* tablets and laptops: the invitation scales up so it fills the screen like a printed card, not a phone column */
+  @media (min-width: 760px) {
+    section.block { max-width: 900px; }
+    .eyebrow { font-size: 16px; letter-spacing: 4.5px; }
+    h2 { font-size: clamp(46px, 5.2vw, 64px); }
+    .lead { font-size: clamp(22px, 2.3vw, 26px); max-width: 36ch; }
+    .invite-card { max-width: 640px; margin: 0 auto; padding: 110px 70px 96px; }
+    .names-block .nm { font-size: clamp(76px, 8.4vw, 100px); }
+    .names-block .amp { font-size: 64px; }
+    .date-strip .big { font-size: 66px; }
+    .date-strip .side { font-size: 16px; min-width: 120px; }
+    .portrait { width: min(30vw, 270px); }
+    .portrait .mono { font-size: 120px; }
+    .person .who { font-size: 38px; }
+    .person .role { font-size: 15px; }
+    .cd { gap: 18px; }
+    .cd .u { width: 136px; padding: 24px 0 18px; border-radius: 18px; }
+    .cd b { font-size: 62px; }
+    .cd span { font-size: 14px; letter-spacing: 2.5px; }
+    .details { max-width: 620px; margin-left: auto; margin-right: auto; gap: 16px; }
+    .row { padding: 20px 24px; }
+    .row .v { font-size: 23px; }
+    .btns { gap: 16px; }
+    .btn { font-size: 15px; padding: 17px 32px; }
+    .rsvp-done { font-size: 38px; }
+  }
   .still .topbar, .still .hint, .still .scroll-cue, .still .quickbar { display: none; }
   .still .pre, .still .post, .still .final { transition: none !important; }
   @media (prefers-reduced-motion: reduce) {
@@ -501,7 +527,7 @@ const CONFIG = {
   venue: null,                   // e.g. "Shree Hall"
   venueAddress: null,            // e.g. "Ring Road, Surat"
   mapsUrl: null,                 // Google Maps link
-  rsvpPhone: null,               // WhatsApp number with country code, digits only, e.g. "919876543210"
+  rsvpPhone: "919924544233",          // family WhatsApp: RSVPs open straight in this chat
   brideParents: null,            // e.g. "Mr. & Mrs. ... Patel"
   groomParents: null,
   // set to true after dropping the file into the assets folder
