@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Send Invitations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400&family=Cormorant+Garamond:wght@400;600&family=Cormorant+SC:wght@600&family=Noto+Serif+Gujarati:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --forest: #1b2c23; --sage: #a3baa0; --sage-soft: #e3ebe0; --gold: #ab9e68; --gold-deep: #8c7f4c;
+    --paper: #fbfaf5; --ink: #3d4a40; --ink-soft: #6c776e; --wa: #1f8f5a; --line: rgba(171, 158, 104, .35);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 18px/1.5 "Cormorant Garamond", "Noto Serif Gujarati", serif; }
+  header { background: var(--forest); color: #efe6cf; padding: 34px 16px 30px; text-align: center; }
+  header h1 { font-family: "Bodoni Moda", serif; font-weight: 400; font-size: clamp(28px, 7vw, 42px); margin: 0; color: #dcc283; }
+  header p { margin: 6px 0 0; color: #cfc4a8; }
+  main { max-width: 920px; margin: 0 auto; padding: 26px 16px 80px; }
+  .card { background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 0 0 1px var(--line); margin-bottom: 18px; }
+  label { display: block; font-family: "Cormorant SC", serif; font-weight: 600; letter-spacing: 1.5px; font-size: 13px; color: var(--gold-deep); margin: 0 0 6px; }
+  .hint { font-size: 15px; color: var(--ink-soft); margin: 6px 0 0; }
+  input[type=text], input[type=url], textarea, select {
+    width: 100%; border: 1px solid var(--line); border-radius: 10px; background: var(--paper);
+    font: inherit; font-size: 17px; color: var(--ink); padding: 10px 12px;
+  }
+  textarea { min-height: 170px; resize: vertical; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+  .btn { border: 0; cursor: pointer; border-radius: 999px; padding: 11px 20px; font: 600 14px "Cormorant SC", serif; letter-spacing: 1.5px; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; white-space: nowrap; }
+  .btn-gold { background: linear-gradient(135deg, #f2dc9c, #c9a95f 45%, #a88a45); color: #2a2412; }
+  .btn-wa { background: var(--wa); color: #fff; }
+  .btn-line { background: transparent; color: var(--forest); box-shadow: inset 0 0 0 1.5px var(--forest); }
+  .btn svg { width: 16px; height: 16px; }
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 14px; }
+  .progress { margin-left: auto; font-size: 16px; color: var(--ink-soft); }
+  .list { display: grid; gap: 10px; }
+  .guest { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; background: #fff; border-radius: 14px; padding: 12px 14px; box-shadow: 0 0 0 1px var(--line); }
+  .guest.sent { background: var(--sage-soft); }
+  .guest .nm { font-weight: 600; font-size: 19px; line-height: 1.2; }
+  .guest .lnk { font-size: 13px; color: var(--ink-soft); word-break: break-all; }
+  .guest .acts { display: flex; gap: 8px; }
+  .tick { width: 22px; height: 22px; accent-color: var(--wa); }
+  @media (max-width: 640px) {
+    .guest { grid-template-columns: auto 1fr; }
+    .guest .acts { grid-column: 1 / -1; }
+    .guest .acts .btn { flex: 1; justify-content: center; }
+  }
+  .empty { text-align: center; color: var(--ink-soft); padding: 26px 0; }
+  .toast { position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 120px); background: var(--forest); color: #efe6cf; padding: 10px 18px; border-radius: 999px; transition: transform .3s; font-size: 16px; }
+  .toast.show { transform: translate(-50%, 0); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Send the invitations</h1>
+  <p>Twinkal &amp; Ashay · Sunday, 29 November 2026</p>
+</header>
+
+<main>
+  <div class="card">
+    <label for="names">Guest list</label>
+    <textarea id="names" placeholder="One family per line. Add a WhatsApp number after a comma if you have it:&#10;Mehta Family, 9876543210&#10;Shah Parivar&#10;Rameshbhai &amp; Family, 919812345678"></textarea>
+    <p class="hint">A 10-digit Indian number gets +91 added automatically. Without a number, WhatsApp lets you pick the chat.</p>
+  </div>
+
+  <div class="card grid">
+    <div>
+      <label for="base">Invitation link</label>
+      <input type="url" id="base">
+      <p class="hint">Filled in automatically once the site is online.</p>
+    </div>
+    <div>
+      <label for="msgLang">Message language</label>
+      <select id="msgLang">
+        <option value="auto">Auto: ગુજરાતી for names typed in Gujarati, else English</option>
+        <option value="en">English</option>
+        <option value="gu">ગુજરાતી (opens the invitation in Gujarati)</option>
+        <option value="both">English + ગુજરાતી</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <button class="btn btn-gold" id="makeBtn">Create personal links</button>
+    <button class="btn btn-line" id="csvBtn">Download list (CSV)</button>
+    <span class="progress" id="progress"></span>
+  </div>
+
+  <h2 style="font-family:'Bodoni Moda',serif;font-weight:400;color:var(--gold-deep);margin:30px 0 12px">Personal links</h2>
+  <div class="list" id="list"><p class="empty">Paste your guest list above and press “Create personal links”.</p></div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+};
+
+$("base").value = store.get("send-base", new URL("./", location.href).href);
+$("names").value = store.get("send-names", "");
+$("msgLang").value = store.get("send-lang", "auto");
+let sent = store.get("send-sent", {});
+
+const MSG = {
+  en: (name, link) => `Dear ${name},\n\nWith great joy, the Patel family invites you to the engagement of *Twinkal & Ashay* on *Sunday, 29 November 2026*. 💍\n\nYour personal invitation is waiting for you, tap to open the box:\n${link}`,
+  gu: (name, link) => `આદરણીય ${name},\n\n*ટ્વિંકલ અને આશય*ની શુભ સગાઈ પ્રસંગે (*રવિવાર, ૨૯ નવેમ્બર ૨૦૨૬*) પટેલ પરિવાર આપને સહપરિવાર ભાવભર્યું આમંત્રણ પાઠવે છે. 💍\n\nઆપનું આમંત્રણ ખોલો:\n${link}`,
+};
+
+function parseGuests() {
+  return $("names").value.split(/\r?\n/).map(l => l.trim()).filter(Boolean).map(line => {
+    const m = line.match(/^(.*?)[,;\t]\s*([+\d][\d\s\-()]{6,})$/);
+    let name = (m ? m[1] : line).trim(), phone = m ? m[2].replace(/\D/g, "") : "";
+    if (phone.length === 10) phone = "91" + phone;
+    return { name: name.slice(0, 60), phone };
+  });
+}
+
+function personalLink(name, langCode) {
+  const u = new URL($("base").value.trim() || "./", location.href);
+  u.searchParams.set("g", name);
+  if (langCode === "gu") u.searchParams.set("lang", "gu");
+  return u.href;
+}
+
+// language for one guest: "auto" picks Gujarati when the name is written in Gujarati script
+function langFor(g) {
+  const ml = $("msgLang").value;
+  return ml === "auto" ? (/[઀-૿]/.test(g.name) ? "gu" : "en") : ml;
+}
+function message(g) {
+  const ml = langFor(g);
+  if (ml === "both") return MSG.en(g.name, personalLink(g.name, "en")) + "\n\n— — —\n\n" + MSG.gu(g.name, personalLink(g.name, "gu"));
+  return MSG[ml](g.name, personalLink(g.name, ml));
+}
+
+function render() {
+  const guests = parseGuests();
+  const list = $("list");
+  list.textContent = "";
+  if (!guests.length) {
+    const p = document.createElement("p"); p.className = "empty"; p.textContent = "No guests yet."; list.appendChild(p);
+  }
+  guests.forEach(g => {
+    const row = document.createElement("div"); row.className = "guest" + (sent[g.name] ? " sent" : "");
+    const tick = document.createElement("input"); tick.type = "checkbox"; tick.className = "tick"; tick.checked = !!sent[g.name];
+    tick.title = "Mark as sent";
+    tick.addEventListener("change", () => { markSent(g.name, tick.checked); row.classList.toggle("sent", tick.checked); });
+    const info = document.createElement("div");
+    const nm = document.createElement("div"); nm.className = "nm"; nm.textContent = g.name + (g.phone ? "  ·  +" + g.phone : "");
+    const lnk = document.createElement("div"); lnk.className = "lnk"; lnk.textContent = personalLink(g.name, langFor(g) === "gu" ? "gu" : "en");
+    info.append(nm, lnk);
+    const acts = document.createElement("div"); acts.className = "acts";
+    const copy = document.createElement("button"); copy.className = "btn btn-line"; copy.textContent = "Copy";
+    copy.addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText(message(g)); toast("Message copied"); } catch (e) { toast("Copy failed, long-press the link instead"); }
+    });
+    const wa = document.createElement("a"); wa.className = "btn btn-wa"; wa.target = "_blank"; wa.rel = "noopener";
+    wa.href = `https://wa.me/${g.phone}?text=${encodeURIComponent(message(g))}`;
+    wa.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2z"/></svg>';
+    wa.append("Send");
+    wa.addEventListener("click", () => { markSent(g.name, true); tick.checked = true; row.classList.add("sent"); });
+    acts.append(copy, wa);
+    row.append(tick, info, acts);
+    list.appendChild(row);
+  });
+  progress(guests);
+}
+
+function markSent(name, on) {
+  if (on) sent[name] = Date.now(); else delete sent[name];
+  store.set("send-sent", sent);
+  progress(parseGuests());
+}
+function progress(guests) {
+  const done = guests.filter(g => sent[g.name]).length;
+  $("progress").textContent = guests.length ? `${done} of ${guests.length} sent` : "";
+}
+function toast(text) {
+  const t = $("toast"); t.textContent = text; t.classList.add("show");
+  clearTimeout(toast.timer); toast.timer = setTimeout(() => t.classList.remove("show"), 1800);
+}
+
+$("makeBtn").addEventListener("click", () => {
+  store.set("send-names", $("names").value); store.set("send-base", $("base").value); store.set("send-lang", $("msgLang").value);
+  render();
+});
+$("msgLang").addEventListener("change", () => { store.set("send-lang", $("msgLang").value); render(); });
+$("csvBtn").addEventListener("click", () => {
+  const rows = [["Name", "WhatsApp", "Personal link", "Sent"]].concat(parseGuests().map(g =>
+    [g.name, g.phone ? "+" + g.phone : "", personalLink(g.name, langFor(g) === "gu" ? "gu" : "en"), sent[g.name] ? "yes" : ""]));
+  const csv = "﻿" + rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\r\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+  a.download = "Twinkal-Ashay-guest-links.csv";
+  document.body.appendChild(a); a.click(); a.remove();
+});
+if ($("names").value) render();
+</script>
+</body>
+</html>
