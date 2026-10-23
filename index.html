@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1b2c23">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%231b2c23'/%3E%3Ctext x='32' y='43' font-family='serif' font-size='30' text-anchor='middle' fill='%23dcc283'%3ET%26amp;A%3C/text%3E%3C/svg%3E">
 <title>Twinkal &amp; Ashay · Engagement</title>
 <meta name="description" content="Twinkal Patel & Ashay Patel are getting engaged · Sunday, 29 November 2026 · Tap to open your invitation">
 <!-- link preview for WhatsApp: og:image must be an absolute URL once the site is hosted -->
@@ -59,15 +60,34 @@
   .chip[hidden] { display: none; }
   .chip svg { width: 16px; height: 16px; }
 
-  /* ---------- 3D ring box scene ---------- */
-  .scene { position: relative; height: 100svh; min-height: 560px; overflow: hidden; background: radial-gradient(120% 80% at 50% 38%, #3b5a48 0%, #1b2c23 62%, #101b15 100%); }
-  #gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: pan-y; opacity: 0; transition: opacity 1.2s ease; }
-  .gl-ready #gl { opacity: 1; }
-  .scene .fallback { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; padding: 16% 6% 34%; opacity: 0; transition: opacity .8s; }
-  .no-gl .scene .fallback { opacity: 1; }
+  /* ---------- ring box film ---------- */
+  /* background is the film's own deep green, so nothing flashes before the first frame paints */
+  .scene { position: relative; height: 100svh; min-height: 560px; overflow: hidden; background: #131f16; }
+  .scene .film, .scene .final {
+    position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: cover; object-position: 50% 42%;
+    background: #131f16; touch-action: pan-y; -webkit-tap-highlight-color: transparent;
+  }
+  .scene .film { background: #131f16 url(assets/box-poster.webp) 50% 42% / cover no-repeat; }
+  .scene .final { opacity: 0; transition: opacity .8s ease; pointer-events: none; }
+  .show-final .scene .final { opacity: 1; }
+  /* wider than the film (tablets, laptops): show all of it and melt its sides into the same green */
+  @media (min-aspect-ratio: 10/16) {
+    .scene { background: radial-gradient(60% 90% at 50% 45%, #22301f 0%, #131f16 70%, #0c140e 100%); }
+    .scene .film, .scene .final { object-fit: contain; object-position: 50% 50%; background: transparent; }
+    .scene .film { background: transparent; }
+    .scene .film, .scene .final {
+      -webkit-mask-image: linear-gradient(to right, transparent calc(50% - 50svh * 9 / 16), #000 calc(50% - 50svh * 9 / 16 + 9svh), #000 calc(50% + 50svh * 9 / 16 - 9svh), transparent calc(50% + 50svh * 9 / 16));
+              mask-image: linear-gradient(to right, transparent calc(50% - 50svh * 9 / 16), #000 calc(50% - 50svh * 9 / 16 + 9svh), #000 calc(50% + 50svh * 9 / 16 - 9svh), transparent calc(50% + 50svh * 9 / 16));
+    }
+  }
   .scene::after { content: ""; position: absolute; inset: auto 0 0 0; height: 46%; background: linear-gradient(to top, rgba(12, 20, 15, .92), rgba(12, 20, 15, 0)); pointer-events: none; }
-  .loader { position: absolute; inset: 0; display: grid; place-items: center; color: var(--gold-bright); font-family: var(--script); font-size: 30px; transition: opacity .8s; pointer-events: none; }
-  .gl-ready .loader, .no-gl .loader { opacity: 0; }
+  /* deeper shade under the names, faded in with them so the opening itself stays bright */
+  .scrim { position: absolute; inset: auto 0 0 0; height: 62%; pointer-events: none; opacity: 0; transition: opacity 1.4s ease;
+    background: linear-gradient(to top, rgba(10, 17, 12, .9) 0%, rgba(10, 17, 12, .72) 34%, rgba(10, 17, 12, 0) 100%); }
+  .named .scrim { opacity: 1; }
+  /* only shown if a guest taps before the film has arrived on a slow connection */
+  .loader { position: absolute; inset: 0; display: grid; place-items: center; color: var(--gold-bright); font-family: var(--script); font-size: 30px; transition: opacity .6s; pointer-events: none; opacity: 0; }
+  .buffering .loader { opacity: 1; }
   .loader span { animation: breathe 1.8s ease-in-out infinite; }
   @keyframes breathe { 50% { opacity: .35; } }
 
@@ -75,7 +95,7 @@
   .pre, .post { transition: opacity .9s ease, transform .9s ease; }
   .post { position: absolute; left: 0; right: 0; bottom: 0; opacity: 0; transform: translateY(16px); pointer-events: none; }
   .opened .pre { opacity: 0; transform: translateY(-10px); pointer-events: none; }
-  .opened .post { opacity: 1; transform: none; pointer-events: auto; transition-delay: 2.9s; transition-duration: 1.2s; }
+  .named .post { opacity: 1; transform: none; pointer-events: auto; transition-duration: 1.4s; }
   .kicker { font-family: var(--caps); font-weight: 600; letter-spacing: 3px; font-size: 13px; color: var(--gold-bright); margin: 0 0 14px; text-transform: uppercase; }
   :lang(gu) .kicker { letter-spacing: .5px; font-size: 15px; }
   .guest-name { font-family: "Allura", "Noto Serif Gujarati", cursive; font-size: clamp(40px, 11vw, 64px); line-height: 1.1; margin: 0 0 6px; color: var(--gold-bright); text-shadow: 0 2px 18px rgba(0, 0, 0, .45); overflow-wrap: anywhere; }
@@ -90,7 +110,8 @@
   @keyframes ripple { from { transform: scale(.92); opacity: 1; } to { transform: scale(1.18); opacity: 0; } }
   .hero-names { font-family: var(--display); font-weight: 400; font-size: clamp(36px, 10.4vw, 92px); line-height: 1.05; margin: 0; letter-spacing: -.5px;
     background: linear-gradient(100deg, #b79f5c 0%, #f4e2a6 30%, #c5a862 50%, #f7e7b3 70%, #b79f5c 100%); background-size: 220% 100%;
-    -webkit-background-clip: text; background-clip: text; color: transparent; animation: foil 7s linear infinite; }
+    -webkit-background-clip: text; background-clip: text; color: transparent; animation: foil 7s linear infinite;
+    filter: drop-shadow(0 2px 10px rgba(0, 0, 0, .55)); }
   :lang(gu) .hero-names { font-size: clamp(38px, 11vw, 80px); line-height: 1.25; }
   .hero-names em { font-family: var(--script); font-style: normal; font-size: .62em; padding: 0 .12em; }
   :lang(gu) .hero-names em { font-family: "Allura", cursive; font-size: .6em; padding: 0 .28em; }
@@ -248,21 +269,14 @@
     .invite-card { padding: 96px 60px 84px; }
   }
   .still .topbar, .still .hint, .still .scroll-cue, .still .quickbar { display: none; }
-  .still .pre, .still .post { transition: none !important; }
+  .still .pre, .still .post, .still .final { transition: none !important; }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
     .rv { opacity: 1; transform: none; }
   }
 </style>
-<!-- three.js r160 is bundled locally so the invitation never depends on a third-party CDN -->
-<script type="importmap">
-{ "imports": {
-  "three": "./assets/vendor/three.module.min.js",
-  "three/addons/environments/RoomEnvironment.js": "./assets/vendor/RoomEnvironment.js",
-  "three/addons/geometries/RoundedBoxGeometry.js": "./assets/vendor/RoundedBoxGeometry.js"
-} }
-</script>
-<link rel="modulepreload" href="assets/vendor/three.module.min.js">
+<!-- the closed box shows the moment the page opens; the video then loads quietly behind it -->
+<link rel="preload" href="assets/box-poster.webp" as="image" type="image/webp" fetchpriority="high">
 </head>
 <body class="locked">
 
@@ -275,8 +289,13 @@
 
 <!-- ================= 1. RING BOX ================= -->
 <header class="scene" id="scene">
-  <canvas id="gl" aria-label="A velvet ring box that opens to show two engagement rings"></canvas>
-  <img class="fallback" data-src="assets/card-fallback.jpg" alt="Engagement card for Twinkal and Ashay">
+  <video class="film" id="film" muted playsinline webkit-playsinline preload="auto" disablepictureinpicture disableremoteplayback
+         poster="assets/box-poster.webp" aria-label="A velvet ring box opens to show two engagement rings and a gold T &amp; A on the lid">
+    <source src="assets/box-open.mp4" type="video/mp4">
+    <source src="assets/box-open.webm" type="video/webm">
+  </video>
+  <img class="final" data-src="assets/box-final.webp" alt="">
+  <div class="scrim"></div>
   <div class="loader"><span>T &amp; A</span></div>
   <div class="scene-ui">
     <div class="pre">
@@ -288,7 +307,7 @@
       <p class="kicker" data-i18n="engagementOf">The engagement of</p>
       <h1 class="hero-names"><span data-i18n="bride">Twinkal</span><em>&amp;</em><span data-i18n="groom">Ashay</span></h1>
       <p class="hero-date" data-i18n="dateLong">Sunday · 29 November 2026</p>
-      <p class="hint" data-i18n="dragHint">Turn the rings with your finger · scroll for your invitation</p>
+      <p class="hint" data-i18n="dragHint">Scroll down for your invitation</p>
       <a href="#invite" class="scroll-cue" aria-label="Scroll to the invitation"></a>
     </div>
   </div>
@@ -473,7 +492,7 @@ const I18N = {
     gift: "A little box of joy, from the Patel family", tapOpen: "Tap to open",
     forYou: "This little box of joy is for you", barRsvp: "RSVP", barLoc: "LOCATION",
     engagementOf: "The engagement of", bride: "Twinkal", groom: "Ashay",
-    dateLong: "Sunday · 29 November 2026", dragHint: "Turn the rings with your finger · scroll for your invitation",
+    dateLong: "Sunday · 29 November 2026", dragHint: "Scroll down for your invitation",
     saveDate: "SAVE THE DATE",
     inviteLine: "With the blessings of our elders, we joyfully invite you and your family to the engagement ceremony of",
     surname: "PATEL", surname2: "Patel", sunday: "SUNDAY", november: "NOVEMBER", yearWords: "TWO THOUSAND TWENTY SIX",
@@ -504,7 +523,7 @@ const I18N = {
     gift: "પટેલ પરિવાર તરફથી ખુશીઓની એક નાની ભેટ", tapOpen: "ખોલવા માટે ટેપ કરો",
     forYou: "ખુશીઓની આ નાની ભેટ આપના માટે છે", barRsvp: "જવાબ આપો", barLoc: "સ્થળ",
     engagementOf: "શુભ સગાઈ", bride: "ટ્વિંકલ", groom: "આશય",
-    dateLong: "રવિવાર · ૨૯ નવેમ્બર ૨૦૨૬", dragHint: "આંગળીથી વીંટી ફેરવો · આમંત્રણ માટે નીચે સ્ક્રોલ કરો",
+    dateLong: "રવિવાર · ૨૯ નવેમ્બર ૨૦૨૬", dragHint: "આમંત્રણ માટે નીચે સ્ક્રોલ કરો",
     saveDate: "તારીખ યાદ રાખજો",
     inviteLine: "વડીલોના આશીર્વાદ સાથે, આ શુભ સગાઈ પ્રસંગે આપને સહપરિવાર પધારવા ભાવભર્યું આમંત્રણ",
     surname: "પટેલ", surname2: "પટેલ", sunday: "રવિવાર", november: "નવેમ્બર", yearWords: "સન ૨૦૨૬",
@@ -681,45 +700,59 @@ function setMusic(on) {
 }
 musicBtn.addEventListener("click", () => setMusic(music.paused));
 
-/* ---------- opening (the 3D module hooks into this) ---------- */
+/* ---------- opening: the ring box film ---------- */
 if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 scrollTo(0, 0);
 addEventListener("scroll", () => { if (document.body.classList.contains("locked") && scrollY) scrollTo(0, 0); }, { passive: true });
-let opened = false;
+const html = document.documentElement;
+const film = document.getElementById("film");
+const finalImg = document.querySelector(".scene .final");
+const NAMES_AT = 5000;   // ms after the film starts: the rings have risen and the camera is settling
+let opened = false, started = false, filmFailed = false;
+film.addEventListener("error", () => { filmFailed = true; });
+[...film.querySelectorAll("source")].pop().addEventListener("error", () => { filmFailed = true; });
+
+// the film's last frame as a still: used when it ends, and whenever it can't play
+function showFinal() {
+  if (!finalImg.src) finalImg.src = finalImg.dataset.src;
+  const done = () => html.classList.add("show-final");
+  if (finalImg.complete) done(); else { finalImg.addEventListener("load", done, { once: true }); finalImg.addEventListener("error", done, { once: true }); }
+}
+// names, scroll and the RSVP bar follow the film itself, not the tap, so a slow start never puts them out of step
+function begin(delay) {
+  if (started) return; started = true;
+  html.classList.remove("buffering");
+  document.dispatchEvent(new Event("openbox"));
+  setTimeout(() => {
+    document.getElementById("scene").classList.add("named");
+    document.body.classList.remove("locked"); scrollTo(0, 0);
+  }, delay);
+}
+function fallBack() { film.pause(); showFinal(); begin(400); }
+film.addEventListener("playing", () => begin(NAMES_AT));
+film.addEventListener("ended", showFinal);
+
 function openBox() {
   if (opened) return; opened = true;
   document.getElementById("scene").classList.add("opened");
-  setTimeout(() => { document.body.classList.remove("locked"); scrollTo(0, 0); }, 3600);
   setMusic(true);
-  document.dispatchEvent(new Event("openbox"));
+  if (filmFailed) return fallBack();
+  const p = film.play();               // inside the tap, so every phone allows it
+  if (p && p.catch) p.catch(fallBack);
+  if (film.readyState < 3) {           // slow connection: a soft "T & A" while it arrives, then carry on regardless
+    html.classList.add("buffering");
+    setTimeout(() => { if (!started) fallBack(); }, 6000);
+  }
 }
 document.getElementById("openBtn").addEventListener("click", openBox);
+film.addEventListener("click", openBox);
 // ?still renders the opened scene at once (used to make the WhatsApp link preview image)
 if (new URLSearchParams(location.search).has("still")) {
-  document.documentElement.classList.add("still");
-  openBox();
+  html.classList.add("still");
+  opened = true; film.preload = "none";
+  document.getElementById("scene").classList.add("opened");
+  showFinal(); begin(0);
 }
-document.getElementById("gl").addEventListener("click", openBox);
-// if 3D can't start within 7 s, show the printed card instead so no guest sees an empty screen
-function showFallback() {
-  const root = document.documentElement;
-  if (root.classList.contains("gl-ready")) return;
-  root.classList.add("no-gl");
-  const img = document.querySelector(".scene .fallback");
-  if (!img.src) img.src = img.dataset.src;
-}
-window.showFallback = showFallback;
-// count the 7 s only while the page is on screen: a link opened in a background tab must not give up early
-let fallbackTimer;
-function armFallback() {
-  clearTimeout(fallbackTimer);
-  if (!document.hidden) fallbackTimer = setTimeout(() => { if (!document.hidden) showFallback(); }, 7000);
-}
-document.addEventListener("visibilitychange", () => {
-  if (document.documentElement.classList.contains("gl-ready")) return;
-  if (document.hidden) clearTimeout(fallbackTimer); else armFallback();
-});
-armFallback();
 
 /* ---------- floating RSVP / Location bar ---------- */
 (() => {
@@ -728,7 +761,7 @@ armFallback();
   let rsvpInView = false;
   const update = () => bar.classList.toggle("show", opened && !rsvpInView);
   new IntersectionObserver(([e]) => { rsvpInView = e.isIntersecting; update(); }, { threshold: .25 }).observe(rsvpEl);
-  document.addEventListener("openbox", () => setTimeout(update, 4400));
+  document.addEventListener("openbox", () => setTimeout(update, 6200));
   const go = el => el.scrollIntoView({ behavior: "smooth", block: "start" });
   document.getElementById("qbRsvp").addEventListener("click", () => {
     go(rsvpEl);
@@ -798,383 +831,6 @@ function renderBlessCount() {
 
 applyLang();
 tick();
-</script>
-
-<!-- ================= the 3D ring box ================= -->
-<script type="module">
-import * as THREE from "three";
-import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
-import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
-
-const canvas = document.getElementById("gl");
-const sceneEl = document.getElementById("scene");
-const root = document.documentElement;
-
-let renderer;
-try {
-  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
-} catch (e) {
-  window.showFallback();
-  throw e;
-}
-let pixelRatio = Math.min(devicePixelRatio || 1, 2);
-renderer.setPixelRatio(pixelRatio);
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.08;
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-
-const scene = new THREE.Scene();
-const pmrem = new THREE.PMREMGenerator(renderer);
-scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.035).texture;
-
-/* background: soft velvet-green vignette */
-function gradientTexture(stops, w = 512, h = 512, radial = true) {
-  const c = document.createElement("canvas"); c.width = w; c.height = h;
-  const g = c.getContext("2d");
-  const gr = radial ? g.createRadialGradient(w / 2, h * .38, 0, w / 2, h * .45, w * .75) : g.createLinearGradient(0, 0, 0, h);
-  stops.forEach(([o, col]) => gr.addColorStop(o, col));
-  g.fillStyle = gr; g.fillRect(0, 0, w, h);
-  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; return tex;
-}
-scene.background = gradientTexture([[0, "#3d5d4a"], [.55, "#1d3026"], [1, "#0e1913"]]);
-
-const camera = new THREE.PerspectiveCamera(30, 1, .1, 60);
-
-/* lights: warm key, cool rim, env does the rest */
-const key = new THREE.DirectionalLight(0xfff0d8, 2.2); key.position.set(3, 6, 5); scene.add(key);
-const rim = new THREE.DirectionalLight(0xbfe0d0, 1.2); rim.position.set(-5, 3, -4); scene.add(rim);
-scene.add(new THREE.HemisphereLight(0xfff6e6, 0x14251c, .35));
-const glow = new THREE.PointLight(0xffd9a0, 0, 3.2, 2); glow.position.set(0, 1.35, .9); scene.add(glow);
-
-/* ---------- materials ---------- */
-const velvet = new THREE.MeshPhysicalMaterial({ color: 0x1f3a2c, roughness: .92, metalness: 0, sheen: 1, sheenRoughness: .38, sheenColor: new THREE.Color(0x9cc7a8), envMapIntensity: .55 });
-const satin = new THREE.MeshPhysicalMaterial({ color: 0xd9cbb2, roughness: .55, sheen: .8, sheenRoughness: .3, sheenColor: new THREE.Color(0xfff3e0), envMapIntensity: .45 });
-const goldMat = new THREE.MeshPhysicalMaterial({ color: 0xf5c66e, metalness: 1, roughness: .14, clearcoat: .5, clearcoatRoughness: .08, envMapIntensity: 1.6 });
-const roseGold = new THREE.MeshPhysicalMaterial({ color: 0xf0b49a, metalness: 1, roughness: .16, clearcoat: .5, clearcoatRoughness: .08, envMapIntensity: 1.6 });
-const trimGold = new THREE.MeshPhysicalMaterial({ color: 0xc9a258, metalness: 1, roughness: .42, envMapIntensity: .85 });
-const diamondMat = new THREE.MeshPhysicalMaterial({
-  color: 0xffffff, metalness: 0, roughness: 0, transmission: 1, thickness: .55, ior: 2.33,
-  specularIntensity: 1, specularColor: new THREE.Color(0xffffff), envMapIntensity: 3.2, flatShading: true,
-  clearcoat: 1, clearcoatRoughness: 0, attenuationColor: new THREE.Color(0xf4fbff), attenuationDistance: 2,
-});
-
-/* ---------- the box ---------- */
-const W = 2.1, D = 1.9, BASE_H = .92, LID_H = .58;
-const box = new THREE.Group(); scene.add(box);
-
-const base = new THREE.Mesh(new RoundedBoxGeometry(W, BASE_H, D, 5, .14), velvet);
-base.position.y = BASE_H / 2; box.add(base);
-
-// thin gold frame around the opening (a rounded rectangle with a hole, not a plate)
-function roundedRect(w, d, r) {
-  const s = new THREE.Shape(), x = -w / 2, y = -d / 2;
-  s.moveTo(x + r, y); s.lineTo(x + w - r, y); s.quadraticCurveTo(x + w, y, x + w, y + r);
-  s.lineTo(x + w, y + d - r); s.quadraticCurveTo(x + w, y + d, x + w - r, y + d);
-  s.lineTo(x + r, y + d); s.quadraticCurveTo(x, y + d, x, y + d - r);
-  s.lineTo(x, y + r); s.quadraticCurveTo(x, y, x + r, y);
-  return s;
-}
-function goldFrame() {
-  const outer = roundedRect(W + .03, D + .03, .15);
-  outer.holes.push(roundedRect(W - .07, D - .07, .1));
-  const geo = new THREE.ExtrudeGeometry(outer, { depth: .03, bevelEnabled: false, curveSegments: 10 });
-  geo.rotateX(-Math.PI / 2);
-  return new THREE.Mesh(geo, trimGold);
-}
-const seam = goldFrame(); seam.position.y = BASE_H - .015; box.add(seam);
-
-// cushion: two satin rolls with a slit between them
-const rollGeo = new THREE.CapsuleGeometry(.3, W - .62, 10, 28);
-[-1, 1].forEach(side => {
-  const roll = new THREE.Mesh(rollGeo, satin);
-  roll.rotation.z = Math.PI / 2;
-  roll.position.set(0, BASE_H - .1, side * .31);
-  box.add(roll);
-});
-// dark slit so the rings read as tucked in
-const slit = new THREE.Mesh(new THREE.BoxGeometry(W - .5, .02, .03), new THREE.MeshBasicMaterial({ color: 0x3a3226 }));
-slit.position.set(0, BASE_H + .19, 0); box.add(slit);
-
-// lid on a hinge at the back edge
-const hinge = new THREE.Group(); hinge.position.set(0, BASE_H, -D / 2); box.add(hinge);
-const lid = new THREE.Mesh(new RoundedBoxGeometry(W, LID_H, D, 5, .14), velvet);
-lid.position.set(0, LID_H / 2 + .02, D / 2); hinge.add(lid);
-const lidSeam = goldFrame(); lidSeam.position.set(0, .005, D / 2); hinge.add(lidSeam);
-// the lid's frame faces the glow once open, so it gets a softer, satin-finish gold
-lidSeam.material = new THREE.MeshPhysicalMaterial({ color: 0xa8843f, metalness: 1, roughness: .58, envMapIntensity: .55 });
-
-// both names stamped in gold foil on top of the lid
-const monoCanvas = document.createElement("canvas"); monoCanvas.width = 1024; monoCanvas.height = 880;
-const monoTex = new THREE.CanvasTexture(monoCanvas); monoTex.anisotropy = 8;
-const mono = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 1.46), new THREE.MeshPhysicalMaterial({
-  map: monoTex, color: 0xf6d488, metalness: .85, roughness: .22, transparent: true, alphaTest: .05, envMapIntensity: 1.8,
-  emissive: 0x6b4f17, emissiveMap: monoTex, emissiveIntensity: .6,
-}));
-mono.rotation.x = -Math.PI / 2;
-mono.position.set(0, LID_H + .025, D / 2);
-hinge.add(mono);
-function drawMono(lang) {
-  const g = monoCanvas.getContext("2d"), w = 1024, h = 880, gu = lang === "gu";
-  g.clearRect(0, 0, w, h);
-  g.strokeStyle = g.fillStyle = "#fff";
-  g.lineWidth = 5; g.strokeRect(40, 40, w - 80, h - 80);
-  g.lineWidth = 2; g.strokeRect(62, 62, w - 124, h - 124);
-  g.textAlign = "center"; g.textBaseline = "alphabetic";
-  g.font = gu ? '600 150px "Noto Serif Gujarati"' : '230px "Allura"';
-  g.fillText(gu ? "ટ્વિંકલ" : "Twinkal", w / 2, gu ? 330 : 340);
-  g.font = gu ? '400 90px "Noto Serif Gujarati"' : '140px "Allura"';
-  g.fillText("&", w / 2, gu ? 470 : 480);
-  g.font = gu ? '600 150px "Noto Serif Gujarati"' : '230px "Allura"';
-  g.fillText(gu ? "આશય" : "Ashay", w / 2, gu ? 650 : 660);
-  g.font = gu ? '400 46px "Noto Serif Gujarati"' : '600 46px "Cormorant SC"';
-  g.fillText(gu ? "૨૯ · ૧૧ · ૨૦૨૬" : "29 · 11 · 2026", w / 2, 770);
-  monoTex.needsUpdate = true;
-}
-
-// satin lining inside the lid, printed with their names
-const linerCanvas = document.createElement("canvas"); linerCanvas.width = 1024; linerCanvas.height = 900;
-const linerTex = new THREE.CanvasTexture(linerCanvas); linerTex.colorSpace = THREE.SRGBColorSpace; linerTex.anisotropy = 4;
-function drawLiner(lang) {
-  const g = linerCanvas.getContext("2d"), w = 1024, h = 900;
-  const bg = g.createRadialGradient(w / 2, h / 2, 50, w / 2, h / 2, w * .7);
-  bg.addColorStop(0, "#efe4cf"); bg.addColorStop(1, "#d5c4a3");
-  g.fillStyle = bg; g.fillRect(0, 0, w, h);
-  g.strokeStyle = "rgba(140,108,44,.8)"; g.lineWidth = 4; g.strokeRect(60, 60, w - 120, h - 120);
-  g.lineWidth = 1.5; g.strokeRect(80, 80, w - 160, h - 160);
-  g.textAlign = "center"; g.fillStyle = "#7a5c22";
-  g.shadowColor = "rgba(255,240,200,.6)"; g.shadowOffsetY = 2; g.shadowBlur = 2;
-  // names sit in the upper half: the lifted ring floats in front of the lower half
-  const gu = lang === "gu";
-  g.font = gu ? '600 96px "Noto Serif Gujarati"' : '124px "Allura"';
-  g.fillText(gu ? "ટ્વિંકલ" : "Twinkal", w / 2, 195);
-  g.font = gu ? '400 56px "Noto Serif Gujarati"' : '84px "Allura"';
-  g.fillText("&", w / 2, 262);
-  g.font = gu ? '600 96px "Noto Serif Gujarati"' : '124px "Allura"';
-  g.fillText(gu ? "આશય" : "Ashay", w / 2, 345);
-  g.font = gu ? '400 34px "Noto Serif Gujarati"' : '600 32px "Cormorant SC"';
-  g.fillText(gu ? "૨૯ · ૧૧ · ૨૦૨૬" : "29 · 11 · 2026", w / 2, 405);
-  linerTex.needsUpdate = true;
-}
-const liner = new THREE.Mesh(new THREE.PlaneGeometry(W - .3, D - .3), new THREE.MeshPhysicalMaterial({ map: linerTex, roughness: .6, sheen: .5, sheenColor: new THREE.Color(0xfff1d8), envMapIntensity: .35 }));
-liner.rotation.x = Math.PI / 2;            // faces down while closed, towards the guest once open
-liner.position.set(0, -.005 + .02, D / 2);
-hinge.add(liner);
-const fontsReady = Promise.all([
-  document.fonts.load('150px "Allura"'), document.fonts.load('600 38px "Cormorant SC"'), document.fonts.load('600 120px "Noto Serif Gujarati"'),
-  document.fonts.load('400 210px "Bodoni Moda"'),
-]).catch(() => {});
-fontsReady.then(() => { drawLiner(document.documentElement.lang); drawMono(document.documentElement.lang); });
-document.addEventListener("langchange", e => fontsReady.then(() => { drawLiner(e.detail); drawMono(e.detail); }));
-
-/* ---------- the rings ---------- */
-const R = .42;
-function brilliantDiamond(scale) {
-  // round brilliant profile: pavilion point, girdle, crown, table
-  const pts = [[.001, -.16], [.165, -.005], [.17, 0], [.17, .018], [.115, .075], [.001, .075]].map(([x, y]) => new THREE.Vector2(x * scale, y * scale));
-  const geo = new THREE.LatheGeometry(pts, 16);
-  geo.computeVertexNormals();
-  return new THREE.Mesh(geo, diamondMat);
-}
-function makeRing(mat, tube, width, withStone) {
-  const g = new THREE.Group();
-  const band = new THREE.Mesh(new THREE.TorusGeometry(R, tube, 40, 160), mat);
-  band.scale.z = width; g.add(band);
-  if (withStone) {
-    const top = R + tube * .9;
-    const head = new THREE.Mesh(new THREE.CylinderGeometry(.045, .06, .08, 24), mat);
-    head.position.y = top + .02; g.add(head);
-    const stone = brilliantDiamond(.82);
-    stone.position.y = top + .17; g.add(stone);
-    for (let i = 0; i < 6; i++) {
-      const a = i / 6 * Math.PI * 2 + Math.PI / 6;
-      const prong = new THREE.Mesh(new THREE.CylinderGeometry(.011, .016, .2, 10), mat);
-      prong.position.set(Math.cos(a) * .118, top + .12, Math.sin(a) * .118);
-      prong.rotation.set(Math.sin(a) * .18, 0, -Math.cos(a) * .18);
-      g.add(prong);
-      const tip = new THREE.Mesh(new THREE.SphereGeometry(.016, 12, 8), mat);
-      tip.position.set(Math.cos(a) * .135, top + .22, Math.sin(a) * .135); g.add(tip);
-    }
-    g.userData.stone = stone;
-  }
-  return g;
-}
-const pair = new THREE.Group(); box.add(pair);
-const ringHer = makeRing(goldMat, .058, 1.25, true);
-const ringHis = makeRing(roseGold, .07, 1.7, false);
-pair.add(ringHer, ringHis);
-
-// sparkle glints on the diamond
-function starTexture() {
-  const c = document.createElement("canvas"); c.width = c.height = 128;
-  const g = c.getContext("2d");
-  const rg = g.createRadialGradient(64, 64, 0, 64, 64, 64);
-  rg.addColorStop(0, "rgba(255,255,255,1)"); rg.addColorStop(.12, "rgba(255,250,235,.9)"); rg.addColorStop(.4, "rgba(255,240,210,.12)"); rg.addColorStop(1, "rgba(255,240,210,0)");
-  g.fillStyle = rg; g.fillRect(0, 0, 128, 128);
-  g.globalCompositeOperation = "lighter"; g.fillStyle = "rgba(255,255,255,.85)";
-  g.beginPath(); g.moveTo(64, 0); g.lineTo(67, 61); g.lineTo(128, 64); g.lineTo(67, 67); g.lineTo(64, 128); g.lineTo(61, 67); g.lineTo(0, 64); g.lineTo(61, 61); g.closePath(); g.fill();
-  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; return tex;
-}
-const starTex = starTexture();
-const glints = [0, 1, 2].map(i => {
-  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: starTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0 }));
-  s.userData.phase = i * 2.1; s.userData.off = new THREE.Vector3((i - 1) * .05, .03 * i, .06);
-  scene.add(s); return s;
-});
-
-// floating gold dust
-const DUST = 140;
-const dustGeo = new THREE.BufferGeometry();
-const dustPos = new Float32Array(DUST * 3), dustSpeed = new Float32Array(DUST);
-for (let i = 0; i < DUST; i++) {
-  dustPos[i * 3] = (Math.random() - .5) * 7; dustPos[i * 3 + 1] = Math.random() * 4.5 - .5; dustPos[i * 3 + 2] = (Math.random() - .5) * 5;
-  dustSpeed[i] = .002 + Math.random() * .004;
-}
-dustGeo.setAttribute("position", new THREE.BufferAttribute(dustPos, 3));
-const dotC = document.createElement("canvas"); dotC.width = dotC.height = 64;
-{ const g = dotC.getContext("2d"), rg = g.createRadialGradient(32, 32, 0, 32, 32, 32); rg.addColorStop(0, "rgba(255,236,180,1)"); rg.addColorStop(1, "rgba(255,236,180,0)"); g.fillStyle = rg; g.fillRect(0, 0, 64, 64); }
-const dust = new THREE.Points(dustGeo, new THREE.PointsMaterial({ size: .045, map: new THREE.CanvasTexture(dotC), transparent: true, opacity: .55, depthWrite: false, blending: THREE.AdditiveBlending, color: 0xffe3a0 }));
-scene.add(dust);
-
-// soft contact shadow under the box
-const shC = document.createElement("canvas"); shC.width = shC.height = 256;
-{ const g = shC.getContext("2d"), rg = g.createRadialGradient(128, 128, 20, 128, 128, 128); rg.addColorStop(0, "rgba(0,0,0,.65)"); rg.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = rg; g.fillRect(0, 0, 256, 256); }
-const shadow = new THREE.Mesh(new THREE.PlaneGeometry(4.4, 3.6), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(shC), transparent: true, depthWrite: false }));
-shadow.rotation.x = -Math.PI / 2; shadow.position.y = .002; box.add(shadow);
-
-/* ---------- poses ---------- */
-const CUSHION_TOP = BASE_H + .2;
-const SLOT_Y = CUSHION_TOP + R - .26;
-function lerp(a, b, k) { return a + (b - a) * k; }
-const clamp01 = k => Math.min(1, Math.max(0, k));
-const smooth = k => { k = clamp01(k); return k * k * k * (k * (k * 6 - 15) + 10); };   // smootherstep: no jerk at either end
-const phase = (t, start, len) => smooth((t - start) / len);
-
-// her ring lifts out of the cushion towards the guest; his band stays tucked in
-const HER_SLOT = new THREE.Vector3(-.42, SLOT_Y, 0), HER_SHOW = new THREE.Vector3(0, SLOT_Y + .22, 1.15);
-ringHer.position.copy(HER_SLOT);
-ringHis.position.set(.42, SLOT_Y, 0);
-
-/* ---------- camera framing ----------
-   The subject is framed by height and then shifted up with a view offset,
-   so it always sits in the top part of the screen, clear of the text below. */
-function orbit(look, elevDeg, dist) {
-  const e = THREE.MathUtils.degToRad(elevDeg);
-  return { look, pos: new THREE.Vector3(0, look.y + Math.sin(e) * dist, Math.cos(e) * dist) };
-}
-let camClosed, camOpen;
-function resize() {
-  const w = sceneEl.clientWidth, h = sceneEl.clientHeight;
-  renderer.setSize(w, h, false);
-  camera.aspect = w / h;
-  // closed: the swaying box needs ~3.6 units across. Open: box + raised lid + lifted ring span ~2.8 units
-  // high and ~2.6 across, so the camera ends up a little closer: a gentle zoom-in as it opens.
-  const halfTan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
-  const byWidth = need => need / (2 * halfTan * camera.aspect);
-  camClosed = orbit(new THREE.Vector3(0, .75, 0), 26, Math.max(10.6, byWidth(3.6)));
-  camOpen = orbit(new THREE.Vector3(0, 1.38, 0), 14, Math.max(9.6, byWidth(3.05)));
-  camera.setViewOffset(w, h, 0, h * .17, w, h);
-  camera.updateProjectionMatrix();
-}
-addEventListener("resize", resize); resize();
-
-/* ---------- interaction ---------- */
-let openT = -1;                 // seconds since opening, -1 = closed
-let dragVel = 0, spin = -.55, dragging = false, lastX = 0;
-document.addEventListener("openbox", () => { if (openT < 0) openT = 0; });
-if (root.classList.contains("still")) openT = 10;
-canvas.addEventListener("pointerdown", e => { dragging = true; lastX = e.clientX; });
-addEventListener("pointerup", () => { dragging = false; });
-canvas.addEventListener("pointermove", e => {
-  if (!dragging || openT < 3.4) return;
-  const dx = e.clientX - lastX; lastX = e.clientX;
-  dragVel = dx * .008; spin += dragVel;
-});
-
-/* ---------- render loop: pauses off-screen, adapts quality ---------- */
-const clock = new THREE.Clock();
-let visible = true, frames = 0, slowFrames = 0, measuring = true, rafId = 0;
-new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible && !rafId) loop(); }, { threshold: 0 }).observe(sceneEl);
-document.addEventListener("visibilitychange", () => { if (!document.hidden && visible && !rafId) { clock.getDelta(); loop(); } });
-
-const tmpV = new THREE.Vector3(), lookV = new THREE.Vector3();
-function loop() {
-  rafId = 0;
-  if (!visible || document.hidden) return;
-  const dt = Math.min(clock.getDelta(), .05), time = clock.elapsedTime;
-
-  // quality guard: if the phone struggles, render fewer pixels
-  if (measuring && frames > 20) {
-    if (dt > .028) slowFrames++;
-    if (frames > 110) {
-      measuring = false;
-      if (slowFrames > 35 && pixelRatio > 1) { pixelRatio = Math.max(1, pixelRatio * .66); renderer.setPixelRatio(pixelRatio); resize(); }
-    }
-  }
-  frames++;
-
-  if (openT >= 0) openT += dt;
-  const T = openT;
-  // one continuous timeline, every stage eased with smootherstep so nothing starts or stops abruptly
-  const turnK = T < 0 ? 0 : phase(T, 0, 1.4);          // box turns to face the guest
-  const camK = T < 0 ? 0 : phase(T, 0, 4.4);           // slow zoom-in across the whole opening
-  const lidK = T < 0 ? 0 : phase(T, .5, 2.1);          // lid opens
-  const liftK = T < 0 ? 0 : phase(T, 2.2, 2.0);        // ring rises out of the cushion
-  const settle = T < 0 ? 0 : phase(T, 3.6, 1.6);       // gentle sway fades in once it has risen
-
-  // closed: the box sways slowly and the lid "breathes"
-  const idle = 1 - turnK;
-  box.rotation.y = lerp(0, -.42 + Math.sin(time * .5) * .12, idle);
-  box.position.y = Math.sin(time * 1.1) * .03 * idle;
-  const breathe = T < 0 ? Math.max(0, Math.sin(time * 1.6)) * .03 : 0;
-  hinge.rotation.x = -(breathe + lidK * 1.92);
-  glow.intensity = 1.6 * lidK * (1 - .35 * liftK);
-
-  // her ring: out of the slot, up and towards the guest, turning a little as it comes
-  ringHer.position.lerpVectors(HER_SLOT, HER_SHOW, liftK);
-  ringHer.position.y += Math.sin(time * 1.2) * .025 * settle;
-  if (!dragging) { dragVel *= .94; spin += dragVel; }
-  ringHer.rotation.y = lerp(0, -.5, liftK) + Math.sin((T - 3.6) * .8) * .32 * settle + (spin + .55) * settle;
-  ringHer.rotation.x = .16 * liftK;                    // tip the diamond slightly towards the guest
-  pair.visible = hinge.rotation.x < -.35;   // inside the lid's hollow until it opens
-  const ringK = liftK;
-
-  // camera
-  tmpV.lerpVectors(camClosed.pos, camOpen.pos, camK);
-  lookV.lerpVectors(camClosed.look, camOpen.look, camK);
-  camera.position.copy(tmpV);
-  camera.lookAt(lookV);
-
-  // diamond glints
-  const stone = ringHer.userData.stone;
-  stone.getWorldPosition(tmpV);
-  glints.forEach(s => {
-    const p = s.userData.phase;
-    const tw = Math.max(0, Math.sin(time * 2.3 + p)) ** 6;
-    s.material.opacity = pair.visible ? tw * (.35 + .65 * ringK) : 0;
-    s.position.copy(tmpV).add(s.userData.off);
-    const sc = (.16 + .28 * tw) * (1 + ringK * .6);
-    s.scale.set(sc, sc, sc);
-    s.material.rotation = time * .3 + p;
-  });
-
-  // dust drifts upward
-  const arr = dustGeo.attributes.position.array;
-  for (let i = 0; i < DUST; i++) {
-    arr[i * 3 + 1] += dustSpeed[i] * (1 + ringK * 1.5);
-    arr[i * 3] += Math.sin(time * .4 + i) * .0008;
-    if (arr[i * 3 + 1] > 4.2) arr[i * 3 + 1] = -.4;
-  }
-  dustGeo.attributes.position.needsUpdate = true;
-
-  renderer.render(scene, camera);
-  // 3D is up: if the printed card was shown on a slow connection, hand back to the 3D scene
-  if (!root.classList.contains("gl-ready") && frames > 2) { root.classList.add("gl-ready"); root.classList.remove("no-gl"); }
-  rafId = requestAnimationFrame(loop);
-}
-
-// compile shaders before the first visible frame to avoid a hitch
-renderer.compile(scene, camera);
-loop();
 </script>
 </body>
 </html>
