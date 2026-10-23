@@ -61,25 +61,16 @@
   .chip svg { width: 16px; height: 16px; }
 
   /* ---------- ring box film ---------- */
-  /* background is the film's own deep green, so nothing flashes before the first frame paints */
-  .scene { position: relative; height: 100svh; min-height: 560px; overflow: hidden; background: #131f16; }
+  /* wide screens get the full 16:9 film edge to edge; names rise over its lower part */
+  .scene { --poster: url(assets/film-wide-poster.webp); --bg-top: #1b2416; --bg-bottom: #2e3e2c;
+    position: relative; height: 100svh; min-height: 560px; overflow: hidden; background: #111a12; }
   .scene .film, .scene .final {
-    position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: cover; object-position: 50% 42%;
-    background: #131f16; touch-action: pan-y; -webkit-tap-highlight-color: transparent;
+    position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: cover; object-position: 50% 35%;
+    touch-action: pan-y; -webkit-tap-highlight-color: transparent;
   }
-  .scene .film { background: #131f16 url(assets/box-poster.webp) 50% 42% / cover no-repeat; }
+  .scene .film { background: #111a12 var(--poster) 50% 35% / cover no-repeat; }
   .scene .final { opacity: 0; transition: opacity .8s ease; pointer-events: none; }
   .show-final .scene .final { opacity: 1; }
-  /* wider than the film (tablets, laptops): show all of it and melt its sides into the same green */
-  @media (min-aspect-ratio: 10/16) {
-    .scene { background: radial-gradient(60% 90% at 50% 45%, #22301f 0%, #131f16 70%, #0c140e 100%); }
-    .scene .film, .scene .final { object-fit: contain; object-position: 50% 50%; background: transparent; }
-    .scene .film { background: transparent; }
-    .scene .film, .scene .final {
-      -webkit-mask-image: linear-gradient(to right, transparent calc(50% - 50svh * 9 / 16), #000 calc(50% - 50svh * 9 / 16 + 9svh), #000 calc(50% + 50svh * 9 / 16 - 9svh), transparent calc(50% + 50svh * 9 / 16));
-              mask-image: linear-gradient(to right, transparent calc(50% - 50svh * 9 / 16), #000 calc(50% - 50svh * 9 / 16 + 9svh), #000 calc(50% + 50svh * 9 / 16 - 9svh), transparent calc(50% + 50svh * 9 / 16));
-    }
-  }
   .scene::after { content: ""; position: absolute; inset: auto 0 0 0; height: 46%; background: linear-gradient(to top, rgba(12, 20, 15, .92), rgba(12, 20, 15, 0)); pointer-events: none; }
   /* deeper shade under the names, faded in with them so the opening itself stays bright */
   .scrim { position: absolute; inset: auto 0 0 0; height: 62%; pointer-events: none; opacity: 0; transition: opacity 1.4s ease;
@@ -96,6 +87,34 @@
   .post { position: absolute; left: 0; right: 0; bottom: 0; opacity: 0; transform: translateY(16px); pointer-events: none; }
   .opened .pre { opacity: 0; transform: translateY(-10px); pointer-events: none; }
   .named .post { opacity: 1; transform: none; pointer-events: auto; transition-duration: 1.4s; }
+
+  /* phones and portrait tablets: the square cut sits at the top, nothing ever covers the rings, and the
+     backdrop around it takes the film's own colours frame by frame (--bg-top / --bg-bottom, set while it plays) */
+  @media (max-aspect-ratio: 4/5) {
+    .scene { --poster: url(assets/film-square-poster.webp); --v: min(100vw, 60svh); --top: calc(env(safe-area-inset-top) + 40px);
+      background: linear-gradient(to bottom, var(--bg-top) 0, var(--bg-top) var(--top), var(--bg-bottom) calc(var(--top) + var(--v) * .98), #111a12 calc(var(--top) + var(--v) + 140px)); }
+    .scene .film, .scene .final {
+      inset: var(--top) auto auto 50%; width: var(--v); height: var(--v); transform: translateX(-50%); object-position: 50% 50%;
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 13%, #000 80%, transparent 100%);
+              mask-image: linear-gradient(to bottom, transparent 0, #000 13%, #000 80%, transparent 100%);
+    }
+    .scene .film { background: var(--poster) center / cover no-repeat; }
+    .scene::after, .scrim { display: none; }
+    .loader { inset: var(--top) 0 auto; height: var(--v); }
+    .scene-ui { top: calc(var(--top) + var(--v) * .93); bottom: calc(max(20px, env(safe-area-inset-bottom)) + 62px);
+      display: grid; align-content: center; justify-items: center; }
+    .pre, .post { grid-area: 1 / 1; width: 100%; }
+    .post { position: static; }
+  }
+  /* portrait tablets: the square no longer spans the width, so melt its sides too */
+  @media (max-aspect-ratio: 4/5) and (min-aspect-ratio: 3/5) {
+    .scene .film, .scene .final {
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 13%, #000 80%, transparent 100%), linear-gradient(to right, transparent 0, #000 9%, #000 91%, transparent 100%);
+      -webkit-mask-composite: source-in;
+              mask-image: linear-gradient(to bottom, transparent 0, #000 13%, #000 80%, transparent 100%), linear-gradient(to right, transparent 0, #000 9%, #000 91%, transparent 100%);
+              mask-composite: intersect;
+    }
+  }
   .kicker { font-family: var(--caps); font-weight: 600; letter-spacing: 3px; font-size: 13px; color: var(--gold-bright); margin: 0 0 14px; text-transform: uppercase; }
   :lang(gu) .kicker { letter-spacing: .5px; font-size: 15px; }
   .guest-name { font-family: "Allura", "Noto Serif Gujarati", cursive; font-size: clamp(40px, 11vw, 64px); line-height: 1.1; margin: 0 0 6px; color: var(--gold-bright); text-shadow: 0 2px 18px rgba(0, 0, 0, .45); overflow-wrap: anywhere; }
@@ -276,7 +295,8 @@
   }
 </style>
 <!-- the closed box shows the moment the page opens; the video then loads quietly behind it -->
-<link rel="preload" href="assets/box-poster.webp" as="image" type="image/webp" fetchpriority="high">
+<link rel="preload" href="assets/film-square-poster.webp" as="image" type="image/webp" fetchpriority="high" media="(max-aspect-ratio: 4/5)">
+<link rel="preload" href="assets/film-wide-poster.webp" as="image" type="image/webp" fetchpriority="high" media="(min-aspect-ratio: 801/1000)">
 </head>
 <body class="locked">
 
@@ -290,11 +310,17 @@
 <!-- ================= 1. RING BOX ================= -->
 <header class="scene" id="scene">
   <video class="film" id="film" muted playsinline webkit-playsinline preload="auto" disablepictureinpicture disableremoteplayback
-         poster="assets/box-poster.webp" aria-label="A velvet ring box opens to show two engagement rings and a gold T &amp; A on the lid">
-    <source src="assets/box-open.mp4" type="video/mp4">
-    <source src="assets/box-open.webm" type="video/webm">
-  </video>
-  <img class="final" data-src="assets/box-final.webp" alt="">
+         aria-label="A velvet ring box opens to show two engagement rings and a gold T &amp; A on the lid"></video>
+  <img class="final" alt="">
+  <script>
+  // phones get the square cut of the film, wider screens the full 16:9 one; chosen before anything else loads
+  (() => {
+    const f = document.getElementById("film"), img = f.nextElementSibling;
+    const cut = matchMedia("(max-aspect-ratio: 4/5)").matches ? "square" : "wide";
+    f.dataset.cut = cut; f.poster = `assets/film-${cut}-poster.webp`; img.dataset.src = `assets/film-${cut}-final.webp`;
+    f.innerHTML = `<source src="assets/film-${cut}.mp4" type="video/mp4"><source src="assets/film-${cut}.webm" type="video/webm">`;
+  })();
+  </script>
   <div class="scrim"></div>
   <div class="loader"><span>T &amp; A</span></div>
   <div class="scene-ui">
@@ -707,7 +733,10 @@ addEventListener("scroll", () => { if (document.body.classList.contains("locked"
 const html = document.documentElement;
 const film = document.getElementById("film");
 const finalImg = document.querySelector(".scene .final");
-const NAMES_AT = 5000;   // ms after the film starts: the rings have risen and the camera is settling
+const SQUARE = film.dataset.cut === "square";
+// ms after the film starts. Phones show the names below the film, so they arrive once "T&A" is clear;
+// wide screens lay them over the film, so they wait until the camera has settled on the rings.
+const NAMES_AT = SQUARE ? 4300 : 6200;
 let opened = false, started = false, filmFailed = false;
 film.addEventListener("error", () => { filmFailed = true; });
 [...film.querySelectorAll("source")].pop().addEventListener("error", () => { filmFailed = true; });
@@ -732,6 +761,29 @@ function fallBack() { film.pause(); showFinal(); begin(400); }
 film.addEventListener("playing", () => begin(NAMES_AT));
 film.addEventListener("ended", showFinal);
 
+// phones: the backdrop above and below the square film takes the film's own edge colours, frame by frame,
+// so the page warms with the light as the lid opens. [seconds, top colour, bottom colour], darkened to keep text legible.
+const BACKDROP = __BACKDROP__;
+const sceneEl = document.getElementById("scene");
+function backdropAt(t) {
+  let i = 0; while (i < BACKDROP.length - 2 && BACKDROP[i + 1][0] <= t) i++;
+  const [t0, a0, b0] = BACKDROP[i], [t1, a1, b1] = BACKDROP[i + 1], k = Math.min(1, Math.max(0, (t - t0) / (t1 - t0)));
+  const mix = (x, y) => "rgb(" + x.map((v, j) => Math.round(v + (y[j] - v) * k)).join(",") + ")";
+  sceneEl.style.setProperty("--bg-top", mix(a0, a1)); sceneEl.style.setProperty("--bg-bottom", mix(b0, b1));
+}
+if (SQUARE) {
+  backdropAt(0);
+  if ("requestVideoFrameCallback" in film) {
+    const onFrame = (now, meta) => { backdropAt(meta.mediaTime); if (!film.ended) film.requestVideoFrameCallback(onFrame); };
+    film.requestVideoFrameCallback(onFrame);
+  } else {
+    let raf = 0;
+    const tick = () => { backdropAt(film.currentTime); raf = film.paused ? 0 : requestAnimationFrame(tick); };
+    film.addEventListener("playing", () => { if (!raf) tick(); });
+  }
+  film.addEventListener("ended", () => backdropAt(99));
+}
+
 function openBox() {
   if (opened) return; opened = true;
   document.getElementById("scene").classList.add("opened");
@@ -752,6 +804,7 @@ if (new URLSearchParams(location.search).has("still")) {
   opened = true; film.preload = "none";
   document.getElementById("scene").classList.add("opened");
   showFinal(); begin(0);
+  if (SQUARE) backdropAt(99);
 }
 
 /* ---------- floating RSVP / Location bar ---------- */
