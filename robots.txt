@@ -1,2 +1,14 @@
+# Link previews (WhatsApp, Facebook, Telegram, X, LinkedIn, Slack) may read the page and its preview image,
+# otherwise a shared link shows no picture.
+User-agent: facebookexternalhit
+User-agent: Facebot
+User-agent: WhatsApp
+User-agent: TelegramBot
+User-agent: Twitterbot
+User-agent: LinkedInBot
+User-agent: Slackbot-LinkExpanding
+Allow: /
+
+# A private family invitation: every other crawler, search engines included, stays out.
 User-agent: *
 Disallow: /
