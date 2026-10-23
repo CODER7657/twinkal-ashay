@@ -61,23 +61,42 @@
   .chip svg { width: 16px; height: 16px; }
 
   /* ---------- ring box film ---------- */
-  /* The film sits at the top and the words sit below it, so nothing ever covers the rings. Its edges melt into
-     a backdrop that takes the film's own colours frame by frame (--bg-top / --bg-bottom, set while it plays).
+  /* The film sits at the top and the words sit below it, so nothing ever covers the rings. Around it the whole
+     screen glows with a soft, dimmed blur of the film itself (its first frame, warming into its last once the
+     film ends), so the film melts into its own velvet and light rather than a flat wall.
      Wide screens get the 16:9 cut; phones and portrait tablets get the square cut (see the media query). */
-  .scene { --poster: url(assets/film-wide-poster.webp); --bg-top: #1c2317; --bg-bottom: #1c291d;
-    --top: 0px; --fh: min(56.25vw, calc(100svh - 300px)); --fw: calc(var(--fh) * 16 / 9);
-    position: relative; height: 100svh; min-height: 560px; overflow: hidden;
-    background: linear-gradient(to bottom, var(--bg-top) 0, var(--bg-top) calc(var(--top) + var(--fh) * .35), var(--bg-bottom) calc(var(--top) + var(--fh) * .98), #111a12 calc(var(--top) + var(--fh) + 140px)); }
+  .scene { --poster: url(assets/film-wide-poster.webp); --amb-start: url(assets/ambient-wide-start.webp); --amb-end: url(assets/ambient-wide-end.webp);
+    --top: 0px; --fh: min(56.25vw, calc(100svh - 230px)); --fw: calc(var(--fh) * 16 / 9);
+    position: relative; height: 100svh; min-height: 560px; overflow: hidden; background: #111a12; }
+  .ambient, .ambient::before, .ambient::after { position: absolute; inset: 0; pointer-events: none; }
+  .ambient { background: var(--amb-start) center / cover no-repeat; }
+  /* the glow warms only once the film has finished, so nothing else repaints while it plays */
+  .ambient::before { content: ""; background: var(--amb-end) center / cover no-repeat; opacity: 0; transition: opacity 2.2s ease; will-change: opacity; }
+  .show-final .ambient::before { opacity: 1; }
+  /* deepen the lower half so the gold words always read clearly */
+  .ambient::after { content: ""; background: linear-gradient(to bottom, rgba(12, 19, 14, .05) 0, rgba(12, 19, 14, .35) calc(var(--top) + var(--fh) * .8), rgba(12, 19, 14, .78) 100%); }
   .scene .film, .scene .final {
     position: absolute; top: var(--top); left: 50%; width: var(--fw); height: var(--fh); transform: translateX(-50%);
     display: block; object-fit: cover; touch-action: pan-y; -webkit-tap-highlight-color: transparent;
-    -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 68%, transparent 100%), linear-gradient(to right, transparent 0, #000 7%, #000 93%, transparent 100%);
-    -webkit-mask-composite: source-in;
-            mask-image: linear-gradient(to bottom, #000 0, #000 68%, transparent 100%), linear-gradient(to right, transparent 0, #000 7%, #000 93%, transparent 100%);
-            mask-composite: intersect;
   }
+  /* Softens the film's edges into the glow. It is a still layer laid over the film rather than a mask on the
+     video, because masking a moving video costs frames; it fades in as the film settles into its frame. */
+  .veil { position: absolute; inset: 0; pointer-events: none; opacity: 1; transition: opacity 1.5s ease;
+    background: linear-gradient(to bottom, rgba(12, 19, 14, .05) 0, rgba(12, 19, 14, .35) calc(var(--top) + var(--fh) * .8), rgba(12, 19, 14, .78) 100%), var(--amb-end) center / cover no-repeat;
+    -webkit-mask-image: linear-gradient(to bottom, transparent calc(var(--top) + var(--fh) * .66), #000 calc(var(--top) + var(--fh))),
+      linear-gradient(to right, #000 calc(50% - var(--fw) / 2), transparent calc(50% - var(--fw) * .43), transparent calc(50% + var(--fw) * .43), #000 calc(50% + var(--fw) / 2));
+            mask-image: linear-gradient(to bottom, transparent calc(var(--top) + var(--fh) * .66), #000 calc(var(--top) + var(--fh))),
+      linear-gradient(to right, #000 calc(50% - var(--fw) / 2), transparent calc(50% - var(--fw) * .43), transparent calc(50% + var(--fw) * .43), #000 calc(50% + var(--fw) / 2)); }
+  .scene.full .veil { opacity: 0; }
   .scene .film { background: var(--poster) center / cover no-repeat; }
-  .scene .final { opacity: 0; transition: opacity .8s ease; pointer-events: none; }
+  /* wide screens: the film fills the screen while it plays (scale and offset set by fitFull),
+     then glides back into its frame above the names once it ends */
+  .scene .final { transition: opacity .8s ease; }
+  /* only the settling move animates; the film starts full-screen without any zoom on load */
+  .scene.settle .film, .scene.settle .final { transition: transform 1.5s cubic-bezier(.6, 0, .25, 1), opacity .8s ease; }
+  .scene.full .film, .scene.full .final { transform: translate(-50%, var(--full-y, 0px)) scale(var(--full-s, 1)); }
+  .scene.full .scene-ui { top: calc(env(safe-area-inset-top) + 8svh); bottom: auto; text-shadow: 0 1px 12px rgba(0, 0, 0, .6); }
+  .scene .final { opacity: 0; pointer-events: none; }
   .show-final .scene .final { opacity: 1; }
   /* only shown if a guest taps before the film has arrived on a slow connection */
   .loader { position: absolute; left: 0; right: 0; top: var(--top); height: var(--fh); display: grid; place-items: center; color: var(--gold-bright); font-family: var(--script); font-size: 30px; transition: opacity .6s; pointer-events: none; opacity: 0; }
@@ -94,17 +113,15 @@
   .named .post { opacity: 1; transform: none; pointer-events: auto; transition-duration: 1.4s; }
 
   @media (max-aspect-ratio: 4/5) {
-    .scene { --poster: url(assets/film-square-poster.webp); --top: calc(env(safe-area-inset-top) + 40px);
+    .scene { --poster: url(assets/film-square-poster.webp); --amb-start: url(assets/ambient-square-start.webp); --amb-end: url(assets/ambient-square-end.webp);
+      --top: calc(env(safe-area-inset-top) + 40px);
       --fh: min(100vw, 60svh); --fw: var(--fh); }
+    .veil { display: none; }
     /* phones: the square spans the width, so only its top and bottom melt away */
     .scene .film, .scene .final {
       -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 13%, #000 80%, transparent 100%);
               mask-image: linear-gradient(to bottom, transparent 0, #000 13%, #000 80%, transparent 100%);
     }
-  }
-  /* wide screens: one even tone around the film (its side colours), sinking into the deep green below it */
-  @media (min-aspect-ratio: 801/1000) {
-    .scene { background: linear-gradient(to bottom, var(--bg-top) 0, var(--bg-top) calc(var(--fh) * .7), #111a12 calc(var(--fh) + 60px)); }
   }
   /* portrait tablets: the square no longer spans the width, so melt its sides too */
   @media (max-aspect-ratio: 4/5) and (min-aspect-ratio: 3/5) {
@@ -113,29 +130,32 @@
               mask-image: linear-gradient(to bottom, transparent 0, #000 13%, #000 80%, transparent 100%), linear-gradient(to right, transparent 0, #000 9%, #000 91%, transparent 100%);
     }
   }
-  .kicker { font-family: var(--caps); font-weight: 600; letter-spacing: 3px; font-size: 13px; color: var(--gold-bright); margin: 0 0 14px; text-transform: uppercase; }
-  :lang(gu) .kicker { letter-spacing: .5px; font-size: 15px; }
+  .kicker { font-family: var(--caps); font-weight: 600; letter-spacing: 4px; font-size: clamp(14px, 3.9vw, 17px); color: #ecd9a0; margin: 0 0 16px; text-transform: uppercase;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 0 18px rgba(0, 0, 0, .45); text-wrap: balance; }
+  :lang(gu) .kicker { letter-spacing: .5px; font-size: clamp(16px, 4.4vw, 18px); }
   .guest-name { font-family: "Allura", "Noto Serif Gujarati", cursive; font-size: clamp(40px, 11vw, 64px); line-height: 1.1; margin: 0 0 6px; color: var(--gold-bright); text-shadow: 0 2px 18px rgba(0, 0, 0, .45); overflow-wrap: anywhere; }
   .open-btn {
     position: relative; border: 0; cursor: pointer; padding: 15px 34px; border-radius: 999px;
     background: linear-gradient(135deg, #f2dc9c, #c9a95f 45%, #a88a45); color: #2a2412;
-    font-family: var(--caps); font-weight: 600; font-size: 15px; letter-spacing: 2.5px;
+    font-family: var(--caps); font-weight: 600; font-size: 17px; letter-spacing: 3px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, .35), inset 0 1px 0 rgba(255, 255, 255, .6);
   }
-  :lang(gu) .open-btn { letter-spacing: .5px; font-size: 16px; }
+  :lang(gu) .open-btn { letter-spacing: .5px; font-size: 18px; }
   .open-btn::after { content: ""; position: absolute; inset: -6px; border-radius: inherit; border: 1px solid rgba(242, 220, 156, .6); animation: ripple 2.2s ease-out infinite; }
   @keyframes ripple { from { transform: scale(.92); opacity: 1; } to { transform: scale(1.18); opacity: 0; } }
-  .hero-names { font-family: var(--display); font-weight: 400; font-size: clamp(36px, 10.4vw, 92px); line-height: 1.05; margin: 0; letter-spacing: -.5px;
+  .hero-names { font-family: var(--display); font-weight: 500; font-size: clamp(38px, 11vw, 96px); line-height: 1.05; margin: 0; letter-spacing: -.5px;
     background: linear-gradient(100deg, #b79f5c 0%, #f4e2a6 30%, #c5a862 50%, #f7e7b3 70%, #b79f5c 100%); background-size: 220% 100%;
-    -webkit-background-clip: text; background-clip: text; color: transparent; animation: foil 7s linear infinite;
+    -webkit-background-clip: text; background-clip: text; color: transparent; animation: foil 9s linear infinite paused;
     filter: drop-shadow(0 2px 10px rgba(0, 0, 0, .55)); }
+  .show-final .hero-names { animation-play-state: running; }
+  .opened .open-btn::after { animation: none; }
   :lang(gu) .hero-names { font-size: clamp(38px, 11vw, 80px); line-height: 1.25; }
   .hero-names em { font-family: var(--script); font-style: normal; font-size: .62em; padding: 0 .12em; }
   :lang(gu) .hero-names em { font-family: "Allura", cursive; font-size: .6em; padding: 0 .28em; }
   @keyframes foil { to { background-position: -220% 0; } }
-  .hero-date { font-family: var(--caps); font-weight: 600; letter-spacing: 3px; font-size: 14px; margin: 14px 0 0; color: #efe6cf; }
-  :lang(gu) .hero-date { letter-spacing: .5px; font-size: 16px; }
-  .hint { font-size: 13px; color: rgba(239, 230, 207, .7); margin: 18px 0 0; font-style: italic; }
+  .hero-date { font-family: var(--caps); font-weight: 600; letter-spacing: 3.5px; font-size: clamp(15px, 4.2vw, 18px); margin: 16px 0 0; color: #f6eedb; text-shadow: 0 1px 10px rgba(0, 0, 0, .5); }
+  :lang(gu) .hero-date { letter-spacing: .5px; font-size: clamp(16px, 4.6vw, 19px); }
+  .hint { font-size: clamp(15px, 4vw, 17px); color: rgba(246, 238, 219, .88); margin: 18px 0 0; font-style: italic; letter-spacing: .3px; }
   .scroll-cue { display: inline-block; margin-top: 8px; width: 22px; height: 34px; border: 1.5px solid rgba(220, 194, 131, .7); border-radius: 12px; position: relative; }
   .scroll-cue::after { content: ""; position: absolute; left: 50%; top: 7px; width: 3px; height: 7px; margin-left: -1.5px; border-radius: 2px; background: var(--gold-bright); animation: cue 1.8s ease-in-out infinite; }
   @keyframes cue { 0% { transform: translateY(0); opacity: 1; } 80% { transform: translateY(12px); opacity: 0; } 100% { opacity: 0; } }
@@ -146,8 +166,8 @@
     content: ""; position: absolute; inset: 0; background: url(assets/ghost-leaves.webp) center top / 900px auto repeat-y; opacity: .28; pointer-events: none;
   }
   section.block { position: relative; padding: 88px 22px; max-width: 760px; margin: 0 auto; text-align: center; }
-  .eyebrow { font-family: var(--caps); font-weight: 600; letter-spacing: 3px; font-size: 13px; color: var(--gold); margin: 0 0 10px; }
-  :lang(gu) .eyebrow { letter-spacing: .5px; font-size: 15px; }
+  .eyebrow { font-family: var(--caps); font-weight: 600; letter-spacing: 3.5px; font-size: 15px; color: var(--gold-deep); margin: 0 0 12px; }
+  :lang(gu) .eyebrow { letter-spacing: .5px; font-size: 16px; }
   h2 { font-family: var(--display); font-weight: 400; font-size: clamp(32px, 8vw, 50px); color: var(--gold-deep); margin: 0 0 18px; line-height: 1.15; }
   :lang(gu) h2 { font-size: clamp(28px, 7vw, 42px); }
   .lead { font-size: clamp(18px, 4.6vw, 22px); line-height: 1.6; color: var(--ink); margin: 0 auto; max-width: 34ch; }
@@ -165,7 +185,7 @@
   .names-block { margin: 26px 0 4px; position: relative; }
   .names-block .nm { font-family: var(--display); font-size: clamp(46px, 13vw, 76px); line-height: 1; color: var(--gold-deep); display: block; }
   :lang(gu) .names-block .nm { font-size: clamp(38px, 11vw, 62px); line-height: 1.3; }
-  .names-block .sn { font-family: var(--caps); font-weight: 600; letter-spacing: 5px; font-size: 13px; color: var(--gold); display: block; margin-top: 6px; }
+  .names-block .sn { font-family: var(--caps); font-weight: 600; letter-spacing: 5px; font-size: 15px; color: var(--gold-deep); display: block; margin-top: 6px; }
   :lang(gu) .names-block .sn { letter-spacing: 1px; font-size: 15px; }
   .names-block .amp { font-family: var(--script); font-size: clamp(40px, 10vw, 56px); color: var(--gold); display: block; margin: 8px 0 4px; line-height: 1; }
   .date-strip { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 30px; font-family: var(--caps); font-weight: 600; color: var(--gold-deep); position: relative; }
@@ -184,7 +204,7 @@
   .portrait.has-photo .mono { display: none; }
   .portrait:not(.has-photo) img { display: none; }   /* no stray alt text before a photo is added */
   .person .who { font-family: var(--display); font-size: clamp(24px, 6.4vw, 34px); color: var(--gold-deep); margin: 22px 0 2px; }
-  .person .role { font-family: var(--caps); font-weight: 600; letter-spacing: 2px; font-size: 12px; color: var(--ink-soft); }
+  .person .role { font-family: var(--caps); font-weight: 600; letter-spacing: 2.5px; font-size: 14px; color: var(--ink-soft); }
   :lang(gu) .person .role { letter-spacing: .3px; font-size: 14px; }
   .person .parents { font-size: 16px; color: var(--ink-soft); margin-top: 6px; font-style: italic; }
   .ring-join { width: 64px; margin: 30px auto 0; color: var(--gold); }
@@ -199,7 +219,7 @@
   .cd { display: flex; justify-content: center; gap: clamp(8px, 3vw, 18px); margin-top: 28px; }
   .cd .u { width: clamp(68px, 19vw, 104px); padding: 16px 0 12px; border-radius: 14px; background: #fffefb; box-shadow: 0 0 0 1px rgba(171, 158, 104, .3), 0 18px 30px -20px rgba(40, 60, 45, .5); }
   .cd b { display: block; font-family: "Bodoni Moda", "Noto Serif Gujarati", serif; font-weight: 400; font-size: clamp(30px, 8.5vw, 48px); line-height: 1; color: var(--gold-deep); font-variant-numeric: tabular-nums; }
-  .cd span { display: block; margin-top: 8px; font-family: var(--caps); font-weight: 600; letter-spacing: 2px; font-size: 11px; color: var(--ink-soft); }
+  .cd span { display: block; margin-top: 8px; font-family: var(--caps); font-weight: 600; letter-spacing: 2px; font-size: 13px; color: var(--ink-soft); }
   :lang(gu) .cd span { letter-spacing: .3px; font-size: 13px; }
 
   /* details */
@@ -207,7 +227,7 @@
   .row { display: flex; gap: 16px; align-items: center; background: #fffefb; border-radius: 14px; padding: 16px 18px; box-shadow: 0 0 0 1px rgba(171, 158, 104, .25); }
   .row .ic { flex: none; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; background: var(--sage-soft); color: var(--forest-2); }
   .row .ic svg { width: 22px; height: 22px; }
-  .row .k { font-family: var(--caps); font-weight: 600; letter-spacing: 2px; font-size: 12px; color: var(--gold); }
+  .row .k { font-family: var(--caps); font-weight: 600; letter-spacing: 2.5px; font-size: 14px; color: var(--gold-deep); }
   :lang(gu) .row .k { letter-spacing: .3px; font-size: 14px; }
   .row .v { font-size: 20px; color: var(--ink); line-height: 1.35; }
   :lang(gu) .row .v { font-size: 17px; }
@@ -239,7 +259,7 @@
 
   /* rsvp */
   .rsvp-form { display: grid; gap: 12px; max-width: 420px; margin: 26px auto 0; text-align: left; }
-  .field label { display: block; font-family: var(--caps); font-weight: 600; letter-spacing: 2px; font-size: 12px; color: var(--gold); margin-bottom: 6px; }
+  .field label { display: block; font-family: var(--caps); font-weight: 600; letter-spacing: 2.5px; font-size: 14px; color: var(--gold-deep); margin-bottom: 8px; }
   :lang(gu) .field label { letter-spacing: .3px; font-size: 14px; }
   .field input, .field select { width: 100%; height: 50px; border-radius: 12px; border: 1px solid rgba(171, 158, 104, .45); background: #fffefb; padding: 0 14px; font: inherit; font-size: 18px; color: var(--ink); }
   .field input:focus, .field select:focus { outline: 2px solid rgba(171, 158, 104, .6); outline-offset: 1px; }
@@ -262,9 +282,9 @@
   .qb {
     border: 0; cursor: pointer; border-radius: 999px; height: 44px; padding: 0 20px;
     display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;
-    font-family: var(--caps); font-weight: 600; font-size: 13px; letter-spacing: 2px; color: var(--gold-bright); background: transparent;
+    font-family: var(--caps); font-weight: 600; font-size: 15px; letter-spacing: 2.5px; color: var(--gold-bright); background: transparent;
   }
-  :lang(gu) .qb { letter-spacing: .3px; font-size: 15px; }
+  :lang(gu) .qb { letter-spacing: .3px; font-size: 16px; }
   .qb:first-child { background: linear-gradient(135deg, #f2dc9c, #c9a95f 45%, #a88a45); color: #2a2412; }
   .qb svg { width: 18px; height: 18px; }
   footer { padding-bottom: calc(110px + env(safe-area-inset-bottom)); }
@@ -299,9 +319,11 @@
 
 <!-- ================= 1. RING BOX ================= -->
 <header class="scene" id="scene">
+  <div class="ambient" aria-hidden="true"></div>
   <video class="film" id="film" muted playsinline webkit-playsinline preload="auto" disablepictureinpicture disableremoteplayback
          aria-label="A velvet ring box opens to show two engagement rings and a gold T &amp; A on the lid"></video>
   <img class="final" alt="">
+  <div class="veil" aria-hidden="true"></div>
   <script>
   // phones get the square cut of the film, wider screens the full 16:9 one; chosen before anything else loads
   (() => {
@@ -674,41 +696,40 @@ function showFinal() {
   if (finalImg.complete) done(); else { finalImg.addEventListener("load", done, { once: true }); finalImg.addEventListener("error", done, { once: true }); }
 }
 // names, scroll and the RSVP bar follow the film itself, not the tap, so a slow start never puts them out of step
+function reveal() {
+  if (document.getElementById("scene").classList.contains("named")) return;
+  document.getElementById("scene").classList.add("named");
+  document.body.classList.remove("locked"); scrollTo(0, 0);
+  document.dispatchEvent(new Event("named"));
+}
+// delay: ms until the names, or null when the film's end brings them in
 function begin(delay) {
   if (started) return; started = true;
   html.classList.remove("buffering");
   document.dispatchEvent(new Event("openbox"));
-  setTimeout(() => {
-    document.getElementById("scene").classList.add("named");
-    document.body.classList.remove("locked"); scrollTo(0, 0);
-  }, delay);
+  if (delay !== null) setTimeout(reveal, delay);
 }
-function fallBack() { film.pause(); showFinal(); begin(400); }
-film.addEventListener("playing", () => begin(NAMES_AT));
-film.addEventListener("ended", showFinal);
-
-// the backdrop around the film takes the film's own edge colours, frame by frame,
-// so the page warms with the light as the lid opens. [seconds, top colour, bottom colour], darkened to keep text legible.
-const BACKDROP = {"square":[[0.0,[23,32,20],[32,45,31]],[0.33,[24,32,21],[32,45,31]],[0.67,[27,34,22],[32,45,31]],[1.0,[27,34,22],[32,45,31]],[1.33,[27,34,22],[32,44,31]],[1.67,[26,34,22],[30,43,30]],[2.0,[27,34,22],[29,42,29]],[2.33,[26,34,22],[28,41,29]],[2.67,[26,34,22],[28,40,28]],[3.0,[26,33,22],[27,38,27]],[3.33,[43,48,33],[29,38,26]],[3.67,[76,78,59],[33,41,29]],[4.0,[70,71,52],[37,44,31]],[4.33,[57,59,43],[39,46,33]],[4.67,[63,62,44],[39,46,33]],[5.0,[73,68,48],[39,46,32]],[5.33,[78,72,52],[39,45,32]],[5.67,[88,81,62],[37,44,31]],[6.0,[97,91,73],[38,45,32]],[6.33,[104,98,80],[52,57,42]],[6.67,[106,101,83],[79,80,62]],[7.0,[108,102,85],[98,96,76]],[7.33,[109,103,86],[102,99,81]],[7.67,[110,104,87],[104,101,83]],[7.96,[110,105,87],[106,103,86]]],"wide":[[0.0,[27,35,23],[27,35,23]],[0.33,[28,35,23],[28,35,23]],[0.67,[28,35,23],[28,35,23]],[1.0,[28,35,23],[28,35,23]],[1.33,[28,35,24],[28,35,24]],[1.67,[28,35,24],[28,35,24]],[2.0,[28,36,24],[28,36,24]],[2.33,[28,35,24],[28,35,24]],[2.67,[28,35,24],[28,35,24]],[3.0,[29,35,23],[29,35,23]],[3.33,[30,36,24],[30,36,24]],[3.67,[31,37,24],[31,37,24]],[4.0,[30,36,23],[30,36,23]],[4.33,[28,34,22],[28,34,22]],[4.67,[28,35,23],[28,35,23]],[5.0,[28,34,23],[28,34,23]],[5.33,[27,34,22],[27,34,22]],[5.67,[27,33,22],[27,33,22]],[6.0,[28,34,22],[28,34,22]],[6.33,[27,33,22],[27,33,22]],[6.67,[28,33,22],[28,33,22]],[7.0,[30,35,22],[30,35,22]],[7.33,[33,37,25],[33,37,25]],[7.67,[35,39,26],[35,39,26]],[7.96,[37,40,27],[37,40,27]]]}[film.dataset.cut];
+function fallBack() { film.pause(); showFinal(); document.getElementById("scene").classList.remove("full"); begin(400); }
+// wide screens play the film full-screen and bring the names in once it has settled back into its frame;
+// phones already show it edge to edge, with the names below it from the moment "T&A" is clear
+const FULL = film.dataset.cut === "wide" && !new URLSearchParams(location.search).has("still");
 const sceneEl = document.getElementById("scene");
-function backdropAt(t) {
-  let i = 0; while (i < BACKDROP.length - 2 && BACKDROP[i + 1][0] <= t) i++;
-  const [t0, a0, b0] = BACKDROP[i], [t1, a1, b1] = BACKDROP[i + 1], k = Math.min(1, Math.max(0, (t - t0) / (t1 - t0)));
-  const mix = (x, y) => "rgb(" + x.map((v, j) => Math.round(v + (y[j] - v) * k)).join(",") + ")";
-  sceneEl.style.setProperty("--bg-top", mix(a0, a1)); sceneEl.style.setProperty("--bg-bottom", mix(b0, b1));
+function fitFull() {
+  const w = film.offsetWidth, h = film.offsetHeight, H = sceneEl.clientHeight;
+  sceneEl.style.setProperty("--full-s", Math.max(innerWidth / w, H / h).toFixed(4));
+  sceneEl.style.setProperty("--full-y", (H / 2 - film.offsetTop - h / 2).toFixed(1) + "px");
 }
-{
-  backdropAt(0);
-  if ("requestVideoFrameCallback" in film) {
-    const onFrame = (now, meta) => { backdropAt(meta.mediaTime); if (!film.ended) film.requestVideoFrameCallback(onFrame); };
-    film.requestVideoFrameCallback(onFrame);
-  } else {
-    let raf = 0;
-    const tick = () => { backdropAt(film.currentTime); raf = film.paused ? 0 : requestAnimationFrame(tick); };
-    film.addEventListener("playing", () => { if (!raf) tick(); });
-  }
-  film.addEventListener("ended", () => backdropAt(99));
+if (FULL) { fitFull(); sceneEl.classList.add("full"); addEventListener("resize", fitFull); }
+film.addEventListener("playing", () => begin(FULL ? null : NAMES_AT));
+// the settle starts in the film's last second, so the move and its final frames flow as one
+function settle() {
+  if (!sceneEl.classList.contains("full")) return;
+  sceneEl.classList.add("settle"); sceneEl.classList.remove("full");
+  setTimeout(reveal, 700);
 }
+if (FULL) film.addEventListener("timeupdate", () => { if (film.duration && film.currentTime > film.duration - 1.1) settle(); });
+film.addEventListener("ended", () => { showFinal(); if (FULL) settle(); });
+
 
 function openBox() {
   if (opened) return; opened = true;
@@ -730,7 +751,6 @@ if (new URLSearchParams(location.search).has("still")) {
   opened = true; film.preload = "none";
   document.getElementById("scene").classList.add("opened");
   showFinal(); begin(0);
-  backdropAt(99);
 }
 
 /* ---------- floating RSVP / Location bar ---------- */
@@ -740,7 +760,7 @@ if (new URLSearchParams(location.search).has("still")) {
   let rsvpInView = false;
   const update = () => bar.classList.toggle("show", opened && !rsvpInView);
   new IntersectionObserver(([e]) => { rsvpInView = e.isIntersecting; update(); }, { threshold: .25 }).observe(rsvpEl);
-  document.addEventListener("openbox", () => setTimeout(update, NAMES_AT + 900));   // just after the names settle
+  document.addEventListener("named", () => setTimeout(update, 900));   // just after the names settle
   const go = el => el.scrollIntoView({ behavior: "smooth", block: "start" });
   document.getElementById("qbRsvp").addEventListener("click", () => {
     go(rsvpEl);
