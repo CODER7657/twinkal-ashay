@@ -70,7 +70,7 @@
     <div>
       <label for="base">Invitation link</label>
       <input type="url" id="base">
-      <p class="hint">Filled in automatically once the site is online.</p>
+      <p class="hint">Your short address. Leave as is.</p>
     </div>
     <div>
       <label for="msgLang">Message language</label>
@@ -102,7 +102,9 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
 };
 
-$("base").value = store.get("send-base", new URL("./", location.href).href);
+// personal links always point at the short address, wherever this page is opened from
+const CANONICAL = "https://twinkalashay.pages.dev/";
+$("base").value = store.get("send-base", CANONICAL);
 $("names").value = store.get("send-names", "");
 $("msgLang").value = store.get("send-lang", "auto");
 let sent = store.get("send-sent", {});
