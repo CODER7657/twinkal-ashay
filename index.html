@@ -231,7 +231,7 @@
   .quickbar.show { transform: translate(-50%, 0); opacity: 1; }
   .qb {
     border: 0; cursor: pointer; border-radius: 999px; height: 44px; padding: 0 20px;
-    display: inline-flex; align-items: center; gap: 8px;
+    display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;
     font-family: var(--caps); font-weight: 600; font-size: 13px; letter-spacing: 2px; color: var(--gold-bright); background: transparent;
   }
   :lang(gu) .qb { letter-spacing: .3px; font-size: 15px; }
@@ -709,7 +709,17 @@ function showFallback() {
   if (!img.src) img.src = img.dataset.src;
 }
 window.showFallback = showFallback;
-setTimeout(showFallback, 7000);
+// count the 7 s only while the page is on screen: a link opened in a background tab must not give up early
+let fallbackTimer;
+function armFallback() {
+  clearTimeout(fallbackTimer);
+  if (!document.hidden) fallbackTimer = setTimeout(() => { if (!document.hidden) showFallback(); }, 7000);
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.documentElement.classList.contains("gl-ready")) return;
+  if (document.hidden) clearTimeout(fallbackTimer); else armFallback();
+});
+armFallback();
 
 /* ---------- floating RSVP / Location bar ---------- */
 (() => {
@@ -1157,7 +1167,8 @@ function loop() {
   dustGeo.attributes.position.needsUpdate = true;
 
   renderer.render(scene, camera);
-  if (!root.classList.contains("gl-ready") && frames > 2) root.classList.add("gl-ready");
+  // 3D is up: if the printed card was shown on a slow connection, hand back to the 3D scene
+  if (!root.classList.contains("gl-ready") && frames > 2) { root.classList.add("gl-ready"); root.classList.remove("no-gl"); }
   rafId = requestAnimationFrame(loop);
 }
 
