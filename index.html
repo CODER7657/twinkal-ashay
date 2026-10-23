@@ -61,58 +61,56 @@
   .chip svg { width: 16px; height: 16px; }
 
   /* ---------- ring box film ---------- */
-  /* wide screens get the full 16:9 film edge to edge; names rise over its lower part */
-  .scene { --poster: url(assets/film-wide-poster.webp); --bg-top: #1b2416; --bg-bottom: #2e3e2c;
-    position: relative; height: 100svh; min-height: 560px; overflow: hidden; background: #111a12; }
+  /* The film sits at the top and the words sit below it, so nothing ever covers the rings. Its edges melt into
+     a backdrop that takes the film's own colours frame by frame (--bg-top / --bg-bottom, set while it plays).
+     Wide screens get the 16:9 cut; phones and portrait tablets get the square cut (see the media query). */
+  .scene { --poster: url(assets/film-wide-poster.webp); --bg-top: #1c2317; --bg-bottom: #1c291d;
+    --top: 0px; --fh: min(56.25vw, calc(100svh - 300px)); --fw: calc(var(--fh) * 16 / 9);
+    position: relative; height: 100svh; min-height: 560px; overflow: hidden;
+    background: linear-gradient(to bottom, var(--bg-top) 0, var(--bg-top) calc(var(--top) + var(--fh) * .35), var(--bg-bottom) calc(var(--top) + var(--fh) * .98), #111a12 calc(var(--top) + var(--fh) + 140px)); }
   .scene .film, .scene .final {
-    position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: cover; object-position: 50% 35%;
-    touch-action: pan-y; -webkit-tap-highlight-color: transparent;
+    position: absolute; top: var(--top); left: 50%; width: var(--fw); height: var(--fh); transform: translateX(-50%);
+    display: block; object-fit: cover; touch-action: pan-y; -webkit-tap-highlight-color: transparent;
+    -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 68%, transparent 100%), linear-gradient(to right, transparent 0, #000 7%, #000 93%, transparent 100%);
+    -webkit-mask-composite: source-in;
+            mask-image: linear-gradient(to bottom, #000 0, #000 68%, transparent 100%), linear-gradient(to right, transparent 0, #000 7%, #000 93%, transparent 100%);
+            mask-composite: intersect;
   }
-  .scene .film { background: #111a12 var(--poster) 50% 35% / cover no-repeat; }
+  .scene .film { background: var(--poster) center / cover no-repeat; }
   .scene .final { opacity: 0; transition: opacity .8s ease; pointer-events: none; }
   .show-final .scene .final { opacity: 1; }
-  .scene::after { content: ""; position: absolute; inset: auto 0 0 0; height: 46%; background: linear-gradient(to top, rgba(12, 20, 15, .92), rgba(12, 20, 15, 0)); pointer-events: none; }
-  /* deeper shade under the names, faded in with them so the opening itself stays bright */
-  .scrim { position: absolute; inset: auto 0 0 0; height: 62%; pointer-events: none; opacity: 0; transition: opacity 1.4s ease;
-    background: linear-gradient(to top, rgba(10, 17, 12, .9) 0%, rgba(10, 17, 12, .72) 34%, rgba(10, 17, 12, 0) 100%); }
-  .named .scrim { opacity: 1; }
   /* only shown if a guest taps before the film has arrived on a slow connection */
-  .loader { position: absolute; inset: 0; display: grid; place-items: center; color: var(--gold-bright); font-family: var(--script); font-size: 30px; transition: opacity .6s; pointer-events: none; opacity: 0; }
+  .loader { position: absolute; left: 0; right: 0; top: var(--top); height: var(--fh); display: grid; place-items: center; color: var(--gold-bright); font-family: var(--script); font-size: 30px; transition: opacity .6s; pointer-events: none; opacity: 0; }
   .buffering .loader { opacity: 1; }
   .loader span { animation: breathe 1.8s ease-in-out infinite; }
   @keyframes breathe { 50% { opacity: .35; } }
 
-  .scene-ui { position: absolute; left: 0; right: 0; bottom: max(28px, env(safe-area-inset-bottom)); z-index: 2; text-align: center; padding: 0 20px; color: #f6efdc; }
-  .pre, .post { transition: opacity .9s ease, transform .9s ease; }
-  .post { position: absolute; left: 0; right: 0; bottom: 0; opacity: 0; transform: translateY(16px); pointer-events: none; }
+  .scene-ui { position: absolute; left: 0; right: 0; z-index: 2; text-align: center; padding: 0 20px; color: #f6efdc;
+    top: calc(var(--top) + var(--fh) * .93); bottom: calc(max(20px, env(safe-area-inset-bottom)) + 62px);
+    display: grid; align-content: center; justify-items: center; }
+  .pre, .post { grid-area: 1 / 1; width: 100%; transition: opacity .9s ease, transform .9s ease; }
+  .post { opacity: 0; transform: translateY(16px); pointer-events: none; }
   .opened .pre { opacity: 0; transform: translateY(-10px); pointer-events: none; }
   .named .post { opacity: 1; transform: none; pointer-events: auto; transition-duration: 1.4s; }
 
-  /* phones and portrait tablets: the square cut sits at the top, nothing ever covers the rings, and the
-     backdrop around it takes the film's own colours frame by frame (--bg-top / --bg-bottom, set while it plays) */
   @media (max-aspect-ratio: 4/5) {
-    .scene { --poster: url(assets/film-square-poster.webp); --v: min(100vw, 60svh); --top: calc(env(safe-area-inset-top) + 40px);
-      background: linear-gradient(to bottom, var(--bg-top) 0, var(--bg-top) var(--top), var(--bg-bottom) calc(var(--top) + var(--v) * .98), #111a12 calc(var(--top) + var(--v) + 140px)); }
+    .scene { --poster: url(assets/film-square-poster.webp); --top: calc(env(safe-area-inset-top) + 40px);
+      --fh: min(100vw, 60svh); --fw: var(--fh); }
+    /* phones: the square spans the width, so only its top and bottom melt away */
     .scene .film, .scene .final {
-      inset: var(--top) auto auto 50%; width: var(--v); height: var(--v); transform: translateX(-50%); object-position: 50% 50%;
       -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 13%, #000 80%, transparent 100%);
               mask-image: linear-gradient(to bottom, transparent 0, #000 13%, #000 80%, transparent 100%);
     }
-    .scene .film { background: var(--poster) center / cover no-repeat; }
-    .scene::after, .scrim { display: none; }
-    .loader { inset: var(--top) 0 auto; height: var(--v); }
-    .scene-ui { top: calc(var(--top) + var(--v) * .93); bottom: calc(max(20px, env(safe-area-inset-bottom)) + 62px);
-      display: grid; align-content: center; justify-items: center; }
-    .pre, .post { grid-area: 1 / 1; width: 100%; }
-    .post { position: static; }
+  }
+  /* wide screens: one even tone around the film (its side colours), sinking into the deep green below it */
+  @media (min-aspect-ratio: 801/1000) {
+    .scene { background: linear-gradient(to bottom, var(--bg-top) 0, var(--bg-top) calc(var(--fh) * .7), #111a12 calc(var(--fh) + 60px)); }
   }
   /* portrait tablets: the square no longer spans the width, so melt its sides too */
   @media (max-aspect-ratio: 4/5) and (min-aspect-ratio: 3/5) {
     .scene .film, .scene .final {
       -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 13%, #000 80%, transparent 100%), linear-gradient(to right, transparent 0, #000 9%, #000 91%, transparent 100%);
-      -webkit-mask-composite: source-in;
               mask-image: linear-gradient(to bottom, transparent 0, #000 13%, #000 80%, transparent 100%), linear-gradient(to right, transparent 0, #000 9%, #000 91%, transparent 100%);
-              mask-composite: intersect;
     }
   }
   .kicker { font-family: var(--caps); font-weight: 600; letter-spacing: 3px; font-size: 13px; color: var(--gold-bright); margin: 0 0 14px; text-transform: uppercase; }
@@ -313,7 +311,6 @@
     f.innerHTML = `<source src="assets/film-${cut}.mp4" type="video/mp4"><source src="assets/film-${cut}.webm" type="video/webm">`;
   })();
   </script>
-  <div class="scrim"></div>
   <div class="loader"><span>T &amp; A</span></div>
   <div class="scene-ui">
     <div class="pre">
@@ -664,10 +661,8 @@ addEventListener("scroll", () => { if (document.body.classList.contains("locked"
 const html = document.documentElement;
 const film = document.getElementById("film");
 const finalImg = document.querySelector(".scene .final");
-const SQUARE = film.dataset.cut === "square";
-// ms after the film starts. Phones show the names below the film, so they arrive once "T&A" is clear;
-// wide screens lay them over the film, so they wait until the camera has settled on the rings.
-const NAMES_AT = SQUARE ? 4300 : 6200;
+// ms after the film starts: the names arrive below the film once "T&A" is clear on the lid
+const NAMES_AT = 4300;
 let opened = false, started = false, filmFailed = false;
 film.addEventListener("error", () => { filmFailed = true; });
 [...film.querySelectorAll("source")].pop().addEventListener("error", () => { filmFailed = true; });
@@ -692,9 +687,9 @@ function fallBack() { film.pause(); showFinal(); begin(400); }
 film.addEventListener("playing", () => begin(NAMES_AT));
 film.addEventListener("ended", showFinal);
 
-// phones: the backdrop above and below the square film takes the film's own edge colours, frame by frame,
+// the backdrop around the film takes the film's own edge colours, frame by frame,
 // so the page warms with the light as the lid opens. [seconds, top colour, bottom colour], darkened to keep text legible.
-const BACKDROP = [[0.0,[23,32,20],[32,45,31]],[0.33,[24,32,21],[32,45,31]],[0.67,[27,34,22],[32,45,31]],[1.0,[27,34,22],[32,45,31]],[1.33,[27,34,22],[32,44,31]],[1.67,[26,34,22],[30,43,30]],[2.0,[27,34,22],[29,42,29]],[2.33,[26,34,22],[28,41,29]],[2.67,[26,34,22],[28,40,28]],[3.0,[26,33,22],[27,38,27]],[3.33,[43,48,33],[29,38,26]],[3.67,[76,78,59],[33,41,29]],[4.0,[70,71,52],[37,44,31]],[4.33,[57,59,43],[39,46,33]],[4.67,[63,62,44],[39,46,33]],[5.0,[73,68,48],[39,46,32]],[5.33,[78,72,52],[39,45,32]],[5.67,[88,81,62],[37,44,31]],[6.0,[97,91,73],[38,45,32]],[6.33,[104,98,80],[52,57,42]],[6.67,[106,101,83],[79,80,62]],[7.0,[108,102,85],[98,96,76]],[7.33,[109,103,86],[102,99,81]],[7.67,[110,104,87],[104,101,83]],[7.96,[110,105,87],[106,103,86]]];
+const BACKDROP = {"square":[[0.0,[23,32,20],[32,45,31]],[0.33,[24,32,21],[32,45,31]],[0.67,[27,34,22],[32,45,31]],[1.0,[27,34,22],[32,45,31]],[1.33,[27,34,22],[32,44,31]],[1.67,[26,34,22],[30,43,30]],[2.0,[27,34,22],[29,42,29]],[2.33,[26,34,22],[28,41,29]],[2.67,[26,34,22],[28,40,28]],[3.0,[26,33,22],[27,38,27]],[3.33,[43,48,33],[29,38,26]],[3.67,[76,78,59],[33,41,29]],[4.0,[70,71,52],[37,44,31]],[4.33,[57,59,43],[39,46,33]],[4.67,[63,62,44],[39,46,33]],[5.0,[73,68,48],[39,46,32]],[5.33,[78,72,52],[39,45,32]],[5.67,[88,81,62],[37,44,31]],[6.0,[97,91,73],[38,45,32]],[6.33,[104,98,80],[52,57,42]],[6.67,[106,101,83],[79,80,62]],[7.0,[108,102,85],[98,96,76]],[7.33,[109,103,86],[102,99,81]],[7.67,[110,104,87],[104,101,83]],[7.96,[110,105,87],[106,103,86]]],"wide":[[0.0,[27,35,23],[27,35,23]],[0.33,[28,35,23],[28,35,23]],[0.67,[28,35,23],[28,35,23]],[1.0,[28,35,23],[28,35,23]],[1.33,[28,35,24],[28,35,24]],[1.67,[28,35,24],[28,35,24]],[2.0,[28,36,24],[28,36,24]],[2.33,[28,35,24],[28,35,24]],[2.67,[28,35,24],[28,35,24]],[3.0,[29,35,23],[29,35,23]],[3.33,[30,36,24],[30,36,24]],[3.67,[31,37,24],[31,37,24]],[4.0,[30,36,23],[30,36,23]],[4.33,[28,34,22],[28,34,22]],[4.67,[28,35,23],[28,35,23]],[5.0,[28,34,23],[28,34,23]],[5.33,[27,34,22],[27,34,22]],[5.67,[27,33,22],[27,33,22]],[6.0,[28,34,22],[28,34,22]],[6.33,[27,33,22],[27,33,22]],[6.67,[28,33,22],[28,33,22]],[7.0,[30,35,22],[30,35,22]],[7.33,[33,37,25],[33,37,25]],[7.67,[35,39,26],[35,39,26]],[7.96,[37,40,27],[37,40,27]]]}[film.dataset.cut];
 const sceneEl = document.getElementById("scene");
 function backdropAt(t) {
   let i = 0; while (i < BACKDROP.length - 2 && BACKDROP[i + 1][0] <= t) i++;
@@ -702,7 +697,7 @@ function backdropAt(t) {
   const mix = (x, y) => "rgb(" + x.map((v, j) => Math.round(v + (y[j] - v) * k)).join(",") + ")";
   sceneEl.style.setProperty("--bg-top", mix(a0, a1)); sceneEl.style.setProperty("--bg-bottom", mix(b0, b1));
 }
-if (SQUARE) {
+{
   backdropAt(0);
   if ("requestVideoFrameCallback" in film) {
     const onFrame = (now, meta) => { backdropAt(meta.mediaTime); if (!film.ended) film.requestVideoFrameCallback(onFrame); };
@@ -735,7 +730,7 @@ if (new URLSearchParams(location.search).has("still")) {
   opened = true; film.preload = "none";
   document.getElementById("scene").classList.add("opened");
   showFinal(); begin(0);
-  if (SQUARE) backdropAt(99);
+  backdropAt(99);
 }
 
 /* ---------- floating RSVP / Location bar ---------- */
