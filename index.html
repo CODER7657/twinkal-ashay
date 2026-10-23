@@ -79,6 +79,11 @@
     display: block; object-fit: cover; touch-action: pan-y; -webkit-tap-highlight-color: transparent;
   }
   .scene .film { background: var(--poster) center / cover no-repeat; }
+  /* the film's layer, moved as one by the scroll parallax; and a shade that sinks the bottom of the scene into the
+     dark velvet the invitation stage begins with */
+  .film-wrap { position: absolute; inset: 0; will-change: transform; transform-origin: 50% 40%; }
+  .scene-foot { position: absolute; left: 0; right: 0; bottom: 0; height: 24%; pointer-events: none; z-index: 1;
+    background: linear-gradient(to bottom, rgba(15, 26, 18, 0), rgba(15, 26, 18, .7) 60%, #0f1a12); }
   .scene .final { opacity: 0; pointer-events: none; }
   .show-final .scene .final { opacity: 1; }
   /* once the names arrive, the still last frame softens a touch and fades upward into the room below it
@@ -275,7 +280,8 @@
       radial-gradient(80% 60% at 78% 92%, rgba(0, 0, 0, .32), transparent 70%),
       linear-gradient(140deg, #2a4634 0%, #1c3326 48%, #24402f 72%, #15271b 100%); }
   .inv::before, .inv::after { content: ""; position: absolute; left: 0; right: 0; height: 90px; pointer-events: none; z-index: 3; }
-  .inv::before { top: 0; background: linear-gradient(to bottom, var(--paper), rgba(251, 250, 245, 0)); }
+  /* the top continues the film's dark velvet room, so the film and the stage read as one scene */
+  .inv::before { top: 0; height: 160px; background: linear-gradient(to bottom, #0f1a12 0%, rgba(15, 26, 18, .75) 35%, rgba(15, 26, 18, 0) 100%); }
   .inv::after { bottom: 0; background: linear-gradient(to top, var(--paper), rgba(251, 250, 245, 0)); }
   .inv-frame { position: absolute; inset: 86px 18px; pointer-events: none; border: 1px solid rgba(220, 194, 131, .55); }
   .inv-frame::after { content: ""; position: absolute; inset: 6px; border: 1px solid rgba(220, 194, 131, .22); }
@@ -295,7 +301,8 @@
   }
   /* while the scroll animation runs, the section fills the screen and is held in place (GSAP pins it) */
   .inv.gs { height: 100svh; min-height: 560px; padding: 0; }
-  .inv.gs::before, .inv.gs::after { height: 60px; }
+  .inv.gs::after { height: 60px; }
+  .inv.gs::before { height: 130px; }
   @media (max-width: 759.98px) {
     .inv.gs .inv-stage { --cw: min(80vw, 400px, calc((100svh - 150px) * 270 / 377)); display: block; width: var(--cw); height: calc(var(--cw) * 377 / 270); }
     .inv.gs .inv-card { position: absolute; inset: 0; }
@@ -432,9 +439,12 @@
 <!-- ================= 1. RING BOX ================= -->
 <header class="scene" id="scene">
   <div class="ambient" aria-hidden="true"></div>
-  <video class="film" id="film" muted playsinline webkit-playsinline preload="auto" disablepictureinpicture disableremoteplayback
+<div class="film-wrap">
+    <video class="film" id="film" muted playsinline webkit-playsinline preload="auto" disablepictureinpicture disableremoteplayback
          aria-label="A velvet ring box opens to show two engagement rings and a gold T &amp; A on the lid"></video>
   <img class="final" alt="">
+  </div>
+  <div class="scene-foot" aria-hidden="true"></div>
   <div class="edges" aria-hidden="true"></div>
   <div class="shade" aria-hidden="true"></div>
   <script>
@@ -777,6 +787,13 @@ addEventListener("DOMContentLoaded", () => {
     tl.fromTo(leaves[0], { yPercent: 14 }, { yPercent: -20, duration: tl.duration() }, 0)
       .fromTo(leaves[1], { yPercent: -10 }, { yPercent: 18, duration: tl.duration() }, 0);
   });
+  // leaving the film: it drifts down and back with a slight zoom while the names lift away, like a camera
+  // moving on to the cards (only once the film has ended, so playback is never touched)
+  const scene = document.getElementById("scene");
+  gsap.to(".film-wrap", { yPercent: 24, scale: 1.07, ease: "none",
+    scrollTrigger: { trigger: scene, start: "top top", end: "bottom top", scrub: true } });
+  gsap.to(".scene-ui", { yPercent: -40, autoAlpha: 0, ease: "none",
+    scrollTrigger: { trigger: scene, start: "top top", end: "55% top", scrub: true } });
   document.addEventListener("named", () => ScrollTrigger.refresh());
 });
 
