@@ -258,6 +258,7 @@
 
   /* buttons */
   .btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 26px; }
+  .rsvp-note { margin: 2px auto 28px; color: var(--ink-soft); font-size: clamp(17px, 4.4vw, 20px); }
   .btn { border: 0; cursor: pointer; border-radius: 999px; padding: 14px 24px; font-family: var(--caps); font-weight: 600; font-size: 14px; letter-spacing: 2px; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; transition: transform .2s, box-shadow .2s; }
   :lang(gu) .btn { letter-spacing: .3px; font-size: 15px; }
   .btn:active { transform: scale(.97); }
@@ -269,11 +270,6 @@
 
 
   /* rsvp */
-  .rsvp-form { display: grid; gap: 12px; max-width: 420px; margin: 26px auto 0; text-align: left; }
-  .field label { display: block; font-family: var(--caps); font-weight: 600; letter-spacing: 2.5px; font-size: 14px; color: var(--gold-deep); margin-bottom: 8px; }
-  :lang(gu) .field label { letter-spacing: .3px; font-size: 14px; }
-  .field input, .field select { width: 100%; height: 50px; border-radius: 12px; border: 1px solid rgba(171, 158, 104, .45); background: #fffefb; padding: 0 14px; font: inherit; font-size: 18px; color: var(--ink); }
-  .field input:focus, .field select:focus { outline: 2px solid rgba(171, 158, 104, .6); outline-offset: 1px; }
 
   footer { text-align: center; padding: 70px 22px calc(60px + env(safe-area-inset-bottom)); color: #efe6cf; }
   footer .so { font-family: var(--script); font-size: 34px; color: var(--gold-bright); margin: 0; }
@@ -448,11 +444,7 @@
     <section class="block" id="rsvp">
       <p class="eyebrow rv" data-i18n="rsvpEyebrow">Kindly reply</p>
       <h2 class="rv" data-i18n="rsvpTitle">Will you join us?</h2>
-      <div class="rsvp-form rv">
-        <div class="field"><label for="rName" data-i18n="nameLabel">YOUR NAME</label><input id="rName" autocomplete="name" data-i18n-ph="namePh" placeholder="Your name"></div>
-        <div class="field"><label for="rGuests" data-i18n="guestsLabel">NUMBER OF GUESTS</label>
-          <select id="rGuests"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></div>
-      </div>
+      <p class="lead rsvp-note rv" data-i18n="rsvpNote">Just tap your answer. WhatsApp opens with your reply already written; press send, and that is all.</p>
       <div class="btns rv">
         <button class="btn btn-wa" id="yesBtn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.4.1-.2 0-.3 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3z"/></svg><span data-i18n="yes">YES, WE'LL BE THERE</span></button>
         <button class="btn btn-line" id="noBtn"><span data-i18n="no">SORRY, CAN'T MAKE IT</span></button>
@@ -463,9 +455,6 @@
   <footer class="forest">
     <p class="so" data-i18n="signoff">With love,</p>
     <p class="fam" data-i18n="families">The Patel Families</p>
-    <div class="btns">
-      <button class="btn btn-gold" id="shareBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg><span data-i18n="share">SHARE INVITATION</span></button>
-    </div>
     <p class="tiny" data-i18n="replay">Scroll to the top to see the rings again</p>
   </footer>
 </main>
@@ -512,13 +501,12 @@ const I18N = {
     detailsEyebrow: "JOIN US", detailsTitle: "The celebration", when: "DATE", time: "TIME", where: "VENUE",
     dateLongPlain: "Sunday, 29 November 2026", tba: "To be shared soon",
     calendar: "ADD TO CALENDAR", directions: "DIRECTIONS",
-    rsvpEyebrow: "KINDLY REPLY", rsvpTitle: "Will you join us?", nameLabel: "YOUR NAME", namePh: "Your name",
-    guestsLabel: "NUMBER OF GUESTS", yes: "YES, WE'LL BE THERE", no: "SORRY, CAN'T MAKE IT",
-    rsvpYes: "Namaste! {name} will joyfully attend Twinkal & Ashay's engagement on Sunday, 29 November 2026. Guests: {n} 🌸",
-    rsvpNo: "Namaste! {name} is sorry to miss Twinkal & Ashay's engagement on 29 November 2026, and sends warm blessings 🌸",
-    guest: "A guest",
-    signoff: "With love,", families: "The Patel Families", share: "SHARE INVITATION",
-    shareText: "Twinkal & Ashay are getting engaged! 💍 Open your invitation:",
+    rsvpEyebrow: "KINDLY REPLY", rsvpTitle: "Will you join us?",
+    rsvpNote: "Just tap your answer. WhatsApp opens with your reply already written; press send, and that is all.",
+    yes: "YES, WE'LL BE THERE", no: "SORRY, CAN'T MAKE IT",
+    rsvpYes: "Namaste! 🙏 We will joyfully attend Twinkal & Ashay's engagement on Sunday, 29 November 2026 🌸",
+    rsvpNo: "Namaste! 🙏 We are sorry we can't be at Twinkal & Ashay's engagement on 29 November 2026. Warm blessings to them both 🌸",
+    signoff: "With love,", families: "The Patel Families",
     replay: "Scroll to the top to see the rings again", lang: "ગુજરાતી",
   },
   gu: {
@@ -537,13 +525,12 @@ const I18N = {
     detailsEyebrow: "પધારજો", detailsTitle: "શુભ પ્રસંગ", when: "તારીખ", time: "સમય", where: "સ્થળ",
     dateLongPlain: "રવિવાર, ૨૯ નવેમ્બર ૨૦૨૬", tba: "ટૂંક સમયમાં જણાવીશું",
     calendar: "કેલેન્ડરમાં ઉમેરો", directions: "રસ્તો જુઓ",
-    rsvpEyebrow: "જવાબ આપશો", rsvpTitle: "આપ પધારશો ને?", nameLabel: "આપનું નામ", namePh: "આપનું નામ",
-    guestsLabel: "મહેમાનોની સંખ્યા", yes: "હા, જરૂર આવીશું", no: "માફ કરશો, નહીં આવી શકીએ",
-    rsvpYes: "નમસ્તે! {name} ટ્વિંકલ અને આશયની સગાઈમાં (રવિવાર, ૨૯ નવેમ્બર ૨૦૨૬) જરૂર આવશે. મહેમાનો: {n} 🌸",
-    rsvpNo: "નમસ્તે! {name} ટ્વિંકલ અને આશયની સગાઈમાં આવી શકશે નહીં, પણ તેમને હાર્દિક શુભેચ્છાઓ 🌸",
-    guest: "એક મહેમાન",
-    signoff: "સ્નેહાધીન,", families: "પટેલ પરિવાર", share: "આમંત્રણ મોકલો",
-    shareText: "ટ્વિંકલ અને આશયની સગાઈ! 💍 આપનું આમંત્રણ ખોલો:",
+    rsvpEyebrow: "જવાબ આપશો", rsvpTitle: "આપ પધારશો ને?",
+    rsvpNote: "ફક્ત આપનો જવાબ ટેપ કરો. વોટ્સએપમાં જવાબ તૈયાર લખાયેલો ખૂલશે; બસ મોકલો દબાવો.",
+    yes: "હા, જરૂર આવીશું", no: "માફ કરશો, નહીં આવી શકીએ",
+    rsvpYes: "નમસ્તે! 🙏 અમે ટ્વિંકલ અને આશયની સગાઈમાં (રવિવાર, ૨૯ નવેમ્બર ૨૦૨૬) જરૂર આવીશું 🌸",
+    rsvpNo: "નમસ્તે! 🙏 અમે ટ્વિંકલ અને આશયની સગાઈમાં આવી શકીશું નહીં, પણ બંનેને હાર્દિક શુભેચ્છાઓ 🌸",
+    signoff: "સ્નેહાધીન,", families: "પટેલ પરિવાર",
     replay: "વીંટી ફરી જોવા ઉપર સ્ક્રોલ કરો", lang: "English",
   },
 };
@@ -653,19 +640,12 @@ document.getElementById("calBtn").addEventListener("click", () => {
 if (CONFIG.mapsUrl) { const m = document.getElementById("mapBtn"); m.href = CONFIG.mapsUrl; m.hidden = false; }
 
 const waLink = text => `https://wa.me/${CONFIG.rsvpPhone || ""}?text=${encodeURIComponent(text)}`;
+// one tap: WhatsApp already shows who is replying; a personal link also signs it with the family's name
 function rsvp(yes) {
-  const name = document.getElementById("rName").value.trim() || t("guest");
-  const n = num(document.getElementById("rGuests").value);
-  window.open(waLink(t(yes ? "rsvpYes" : "rsvpNo", { name, n })), "_blank", "noopener");
+  window.open(waLink(t(yes ? "rsvpYes" : "rsvpNo") + (GUEST ? "\n— " + GUEST : "")), "_blank", "noopener");
 }
 document.getElementById("yesBtn").addEventListener("click", () => rsvp(true));
 document.getElementById("noBtn").addEventListener("click", () => rsvp(false));
-if (GUEST) document.getElementById("rName").value = GUEST;
-document.getElementById("shareBtn").addEventListener("click", async () => {
-  const url = location.origin + location.pathname;   // never forward someone's personal name
-  if (navigator.share) { try { await navigator.share({ title: "Twinkal & Ashay", text: t("shareText"), url }); return; } catch (e) { if (e.name === "AbortError") return; } }
-  window.open(`https://wa.me/?text=${encodeURIComponent(t("shareText") + " " + url)}`, "_blank", "noopener");
-});
 
 /* ---------- music (only if assets/music.mp3 is present) ---------- */
 const music = document.getElementById("music"), musicBtn = document.getElementById("musicBtn");
@@ -750,7 +730,6 @@ if (new URLSearchParams(location.search).has("still")) {
   const go = el => el.scrollIntoView({ behavior: "smooth", block: "start" });
   document.getElementById("qbRsvp").addEventListener("click", () => {
     go(rsvpEl);
-    setTimeout(() => { const n = document.getElementById("rName"); if (!n.value) n.focus({ preventScroll: true }); }, 700);
   });
   document.getElementById("qbLoc").addEventListener("click", () => {
     if (CONFIG.mapsUrl) window.open(CONFIG.mapsUrl, "_blank", "noopener");
