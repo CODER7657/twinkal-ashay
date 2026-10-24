@@ -932,16 +932,17 @@ addEventListener("DOMContentLoaded", () => {
     if (pin) {
       // the film of the cards; the glide stops just short of its end, then a single step past it lets the section
       // settle on the finished cards (the page gets shorter then) before the next glide measures anything
-      await glide(pin.end - 1, innerHeight * .34);
+      await glide(pin.start, innerHeight * .9);                          // briskly from the names to the cards
+      await glide(pin.end - 1, innerHeight * .25);                       // the card film itself, unhurried
       scrollTo(0, pin.end + 2);
       await wait(2200);
     }
-    const stops = [["duo", 3200], ["distance", 2600], ["cd", 2600], ["details", 3800]];
+    const stops = [["duo", 2900], ["distance", 2300], ["cd", 2300], ["details", 3500]];
     for (const [id, rest] of stops) {
       const el = document.getElementById(id);
-      if (el) { await glide(centre(el), innerHeight * .4); await wait(rest); }
+      if (el) { await glide(centre(el), innerHeight * .5); await wait(rest); }
     }
-    await glide(maxY(), innerHeight * .4);
+    await glide(maxY(), innerHeight * .5);
     playing = false; html.classList.remove("movie"); html.style.scrollBehavior = "";
   }
   document.addEventListener("named", () => setTimeout(play, 50), { once: true });
