@@ -791,7 +791,7 @@ addEventListener("DOMContentLoaded", () => {
   const CUTS = { wide: { dir: "wide", sx: 0, sw: 1920, imgW: 1280 }, tall: { dir: "tall", sx: 945, sw: 860, imgW: 860 } };
   // where the cards sit in the film's last frame (measured), in film pixels
   const STD_RECT = [346, 121, 603, 839], MAIN_RECT = [994, 120, 602, 838];
-  let cut, blobs = [], cur = -1, geo = null, want = 0, filmFetch = false, busy = 0;
+  let cut, blobs = [], cur = -1, geo = null, want = 0, filmFetch = false, busy = 0, played = false;
   const bmps = new Map();
   // the frames download once the box is opened, so they never compete with the opening film itself
   document.addEventListener("openbox", () => { if (!filmFetch) { filmFetch = true; load(cut); } }, { once: true });
@@ -867,10 +867,12 @@ addEventListener("DOMContentLoaded", () => {
     if (cut !== c) { cut = c; if (filmFetch) load(c); }
     layout();
     const film = { f: 0 };
-    const tl = gsap.timeline({ defaults: { ease: "none" }, scrollTrigger: {
+    // the film plays once: after the guest has scrolled through it, the section simply keeps its last frame and
+    // the sharp cards, so scrolling back up shows the finished invitation instead of the animation again
+    const tl = gsap.timeline({ defaults: { ease: "none" }, paused: played, scrollTrigger: played ? undefined : {
       trigger: sec, start: "top top", end: () => "+=" + innerHeight * (wide ? 2.2 : 2.6),
       pin: true, scrub: RENDER ? true : .3, anticipatePin: 1, invalidateOnRefresh: true, fastScrollEnd: true,
-      onRefresh: layout } });
+      onRefresh: layout, onLeave: st => { if (!RENDER) finish(st, tl); } } });
     // 1. the film plays with the scroll
     tl.to(film, { f: COUNT - 1, duration: 3, onUpdate: () => draw(Math.round(film.f)) }, 0)
     // 2. the real cards fade in exactly over the filmed ones, so every word is sharp
@@ -884,7 +886,15 @@ addEventListener("DOMContentLoaded", () => {
         .to(main, { x: () => target().x, y: () => target().y, scale: () => target().scale, duration: .8, ease: "power2.inOut" }, 3.55);
     }
     tl.to({}, { duration: .5 });
+    if (played) tl.progress(1);
   });
+  function finish(st, tl) {
+    if (played) return; played = true;
+    const y = scrollY - (st.end - st.start);              // the page gets shorter by the pinned stretch: keep the view still
+    st.kill(true, true); tl.progress(1);
+    scrollTo({ top: y, behavior: "instant" });
+    ScrollTrigger.refresh();
+  }
   document.addEventListener("named", () => ScrollTrigger.refresh());
 });
 
