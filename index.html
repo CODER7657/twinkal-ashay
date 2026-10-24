@@ -805,7 +805,8 @@ addEventListener("DOMContentLoaded", () => {
     tl.set(std, { x: half, scale: .94, opacity: 1 }, 0)
       .set(main, { x: () => -half(), scale: .9, opacity: wide ? 1 : 0 }, 0)
     // 1. the cover settles towards the guest while a ray of light crosses the monogram
-      .fromTo(cover, { scale: .9, y: 24, autoAlpha: 0 }, { scale: 1, y: 0, autoAlpha: 1, duration: .9, ease: "power3.out" }, 0)
+      // (the cover is already there, solid and closed, while the page glides in: nothing shows through it)
+      .fromTo(cover, { scale: .97, autoAlpha: 1 }, { scale: 1, duration: .9, ease: "power2.out" }, 0)
       .fromTo(shine, { "--sx": "-120%" }, { "--sx": "260%", duration: 1.3, ease: "power2.inOut" }, .5)
     // 2. the doors swing open in 3D, and the Save the Date rises from inside
       .to(doorL, { rotationY: -112, duration: 1.5, ease: "power3.inOut" }, 1.6)
@@ -828,7 +829,15 @@ addEventListener("DOMContentLoaded", () => {
         .fromTo(main, { rotationY: 90, scale: 1, opacity: 1 }, { rotationY: 0, duration: .8, ease: "power2.out", immediateRender: false }, 4.6);
     }
     tl.to({}, { duration: .3 });
-    if (played) tl.progress(1); else tl.progress(0);
+    if (played) tl.progress(1);
+    else {
+      // the waiting state, applied at once: everything hidden behind the closed cover until it plays
+      tl.progress(0);
+      gsap.set(std, { x: half(), scale: .94, opacity: 1, rotationY: 0, rotationZ: 0 });
+      gsap.set(main, { x: -half(), scale: .9, opacity: wide ? 1 : 0, rotationY: 0 });
+      gsap.set(cover, { scale: .97, autoAlpha: 1 }); gsap.set([doorL, doorR], { rotationY: 0 });
+      gsap.set(lift, { opacity: 0 }); gsap.set(gem, { opacity: 0 }); gsap.set(rings, { strokeDashoffset: 1 });
+    }
     current = tl;
   });
   // play once the section is (nearly) filling the screen
