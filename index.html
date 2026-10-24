@@ -718,7 +718,7 @@ const I18N = {
 const params = new URLSearchParams(location.search);
 const GUEST = (params.get("g") || "").replace(/\s+/g, " ").trim().slice(0, 60);
 // ?lang=gu opens the Gujarati version first (used by the sender page for elders)
-let lang = params.get("lang") === "en" ? "en" : "gu";                 // Gujarati first; English is one tap away
+let lang = params.get("lang") === "gu" ? "gu" : "en";
 try { const saved = localStorage.getItem("ta-lang"); if (saved && !params.get("lang")) lang = saved === "gu" ? "gu" : "en"; } catch (e) {}
 const t = (k, vars) => {
   let s = (I18N[lang][k] ?? I18N.en[k] ?? "");
@@ -924,7 +924,15 @@ addEventListener("DOMContentLoaded", () => {
     const step = now => { const t = Math.min(1, (now - t0) / dur); scrollTo(0, from + (to - from) * ease(t)); t < 1 ? requestAnimationFrame(step) : done(); };
     requestAnimationFrame(step);
   });
-  const centre = el => { const r = el.getBoundingClientRect(); return scrollY + r.top - Math.max(0, (innerHeight - r.height) / 2); };
+  // the section's content, without its padding: from its first child's top to its last child's bottom
+  const box = el => { const kids = [...el.children].filter(k => k.offsetHeight), a = kids[0].getBoundingClientRect(), b = kids[kids.length - 1].getBoundingClientRect();
+    return { top: scrollY + a.top, height: b.bottom - a.top }; };
+  async function show(el, rest) {
+    const TOP = 70, BOT = 104, room = innerHeight - TOP - BOT, speed = innerHeight * .65, b = box(el);
+    if (b.height <= room) { await glide(b.top - TOP - (room - b.height) / 2, speed); await wait(rest); return; }
+    await glide(b.top - TOP, speed); await wait(rest * .55);
+    await glide(b.top + b.height - innerHeight + BOT, speed * .7); await wait(rest * .75);
+  }
   async function play() {
     playing = true; html.classList.add("movie"); html.style.scrollBehavior = "auto";
     await wait(2000);                                                     // a moment with the names
@@ -937,12 +945,12 @@ addEventListener("DOMContentLoaded", () => {
       scrollTo(0, pin.end + 2);
       await wait(2200);
     }
-    const stops = [["duo", 2900], ["distance", 2300], ["cd", 2300], ["details", 3500]];
-    for (const [id, rest] of stops) {
-      const el = document.getElementById(id);
-      if (el) { await glide(centre(el), innerHeight * .5); await wait(rest); }
-    }
-    await glide(maxY(), innerHeight * .5);
+    // every stop shows a whole section between the top buttons and the bottom bar; a section taller than that is
+    // shown from its top, then glides on to its end, so nothing is ever cut off on any screen
+    const sections = [document.getElementById("duo").closest("section"), document.getElementById("cd").closest("section"),
+                      document.getElementById("details"), document.querySelector("footer")];
+    const rests = [3000, 2300, 3500, 2500];
+    for (let i = 0; i < sections.length; i++) await show(sections[i], rests[i]);
     playing = false; html.classList.remove("movie"); html.style.scrollBehavior = "";
   }
   document.addEventListener("named", () => setTimeout(play, 50), { once: true });
