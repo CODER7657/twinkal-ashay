@@ -13,7 +13,7 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://twinkalashay.vercel.app/">
 <meta property="og:title" content="Twinkal & Ashay are getting engaged 💍">
-<meta property="og:description" content="Sunday, 29 November 2026 · 10:00 am · Tap to open your invitation">
+<meta property="og:description" content="Sunday, 29 November 2026 · 10:00 am · Evening Post, Naranpura, Ahmedabad · Tap to open your invitation">
 <meta property="og:image" content="https://twinkalashay.vercel.app/og-image.jpg">
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
@@ -513,7 +513,9 @@
             <text class="c-caps" x="630" y="308" font-size="8.4" text-anchor="end" data-i18n="yearWords">TWO THOUSAND TWENTY SIX</text>
             <text class="c-caps" x="630" y="317" font-size="5.6" text-anchor="end" data-i18n="sunday">SUNDAY</text>
             <text class="c-caps" x="631" y="335" font-size="7.6" text-anchor="end" data-i18n="c2time">AT TEN O'CLOCK IN THE MORNING</text>
-            <text class="c-caps" x="631" y="345" font-size="7.6" text-anchor="end" font-weight="500" data-i18n="c2venue">VENUE TO BE ANNOUNCED</text>
+            <text class="c-caps" x="631" y="345" font-size="7.6" text-anchor="end" font-weight="500" data-i18n="c2venue">EVENING POST</text>
+            <text class="c-caps" x="631" y="354" font-size="6.4" text-anchor="end" data-i18n="c2hall">RESTAURANT &amp; BANQUET</text>
+            <text class="c-caps" x="631" y="363" font-size="6.4" text-anchor="end" data-i18n="c2city">NARANPURA, AHMEDABAD, GUJARAT</text>
             <text class="c-script" x="592" y="412" font-size="15" text-anchor="middle" data-i18n="c2love">With love &amp; blessings</text>
           </svg>
         </div>
@@ -634,9 +636,9 @@
 const CONFIG = {
   date: [2026, 11, 29],          // year, month, day
   time: "10:00",                 // 10:00 am
-  venue: null,                   // e.g. "Shree Hall"
-  venueAddress: null,            // e.g. "Ring Road, Surat"
-  mapsUrl: null,                 // Google Maps link
+  venue: "Evening Post Restaurant & Banquet",
+  venueAddress: "111 Shivalik Yash Complex, 132 Ft Ring Road, opp. Shastrinagar BRTS, Naranpura, Ahmedabad, Gujarat 380013",
+  mapsUrl: "https://www.google.com/maps/search/?api=1&query=Evening+Post+Restaurant+%26+Banquet%2C+Shivalik+Yash+Complex%2C+132+Ft+Ring+Road%2C+Naranpura%2C+Ahmedabad%2C+Gujarat+380013",
   brideParents: null,            // e.g. "Mr. & Mrs. ... Patel"
   groomParents: null,
   // set to true after dropping the file into the assets folder
@@ -655,7 +657,7 @@ const I18N = {
     surname: "PATEL", surname2: "Patel", sunday: "SUNDAY", november: "NOVEMBER", yearWords: "TWO THOUSAND TWENTY SIX",
     c1eng: "ENGAGEMENT", c1save: "Save The Date", c1date: "29 NOV 2026",
     c2l1: "WITH THEIR FAMILIES", c2l2: "WE JOYFULLY INVITE YOU TO", c2l3: "THE ENGAGEMENT CEREMONY OF",
-    c2time: "AT TEN O'CLOCK IN THE MORNING", c2venue: "VENUE TO BE ANNOUNCED", c2love: "With love & blessings",
+    c2time: "AT TEN O'CLOCK IN THE MORNING", c2venue: "EVENING POST", c2hall: "RESTAURANT & BANQUET", c2city: "NARANPURA, AHMEDABAD, GUJARAT", c2love: "With love & blessings",
     promiseEyebrow: "TWO FAMILIES, ONE CELEBRATION", promiseTitle: "Two names, one promise",
     brideRole: "THE BRIDE-TO-BE", groomRole: "THE GROOM-TO-BE",
     cityBride: "BHARUCH", cityGroom: "CANADA", kmApart: "over 12,000 km", meetLine: "29 November · side by side",
@@ -678,7 +680,7 @@ const I18N = {
     surname: "પટેલ", surname2: "પટેલ", sunday: "રવિવાર", november: "નવેમ્બર", yearWords: "સન ૨૦૨૬",
     c1eng: "શુભ સગાઈ", c1save: "તારીખ યાદ રાખજો", c1date: "૨૯ નવેમ્બર ૨૦૨૬",
     c2l1: "પરિવારજનો સાથે", c2l2: "આપને ભાવભર્યું આમંત્રણ", c2l3: "શુભ સગાઈ પ્રસંગે",
-    c2time: "સવારે ૧૦:૦૦ કલાકે", c2venue: "સ્થળ ટૂંક સમયમાં જણાવીશું", c2love: "સ્નેહાધીન",
+    c2time: "સવારે ૧૦:૦૦ કલાકે", c2venue: "ઈવનિંગ પોસ્ટ", c2hall: "રેસ્ટોરન્ટ એન્ડ બેન્કવેટ", c2city: "નારણપુરા, અમદાવાદ, ગુજરાત", c2love: "સ્નેહાધીન",
     promiseEyebrow: "બે પરિવાર, એક ઉજવણી", promiseTitle: "બે નામ, એક વચન",
     brideRole: "ભાવિ કન્યા", groomRole: "ભાવિ વર",
     cityBride: "ભરૂચ", cityGroom: "કેનેડા", kmApart: "૧૨,૦૦૦ કિ.મી.થી વધુ દૂર", meetLine: "૨૯ નવેમ્બર · સાથે સાથે",
@@ -878,7 +880,7 @@ document.getElementById("calBtn").addEventListener("click", () => {
   const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Twinkal & Ashay//Engagement//EN", "BEGIN:VEVENT",
     "UID:twinkal-ashay-engagement-20261129", "DTSTAMP:20261023T000000Z", start, end,
     "SUMMARY:Engagement of Twinkal Patel & Ashay Patel",
-    CONFIG.venue ? `LOCATION:${CONFIG.venue}${CONFIG.venueAddress ? ", " + CONFIG.venueAddress : ""}` : "DESCRIPTION:Venue and time to be shared soon.",
+    CONFIG.venue ? `LOCATION:${(CONFIG.venue + (CONFIG.venueAddress ? ", " + CONFIG.venueAddress : "")).replace(/([,;])/g, "\\$1")}` : "DESCRIPTION:Venue and time to be shared soon.",
     "END:VEVENT", "END:VCALENDAR"].join("\r\n");
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([ics], { type: "text/calendar" }));
