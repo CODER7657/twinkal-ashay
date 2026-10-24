@@ -298,25 +298,29 @@
   @media (min-width: 760px) {
     .inv-stage { --cw: min(40vw, 420px, calc((100svh - 100px) * 270 / 377)); flex-direction: row; gap: clamp(16px, 4vw, 40px); }
   }
-  /* while the scroll animation runs, the section fills the screen and is held in place (GSAP pins it) */
-  .inv.gs { height: 100vh; height: 100lvh; min-height: 560px; padding: 0; }   /* the tallest screen height, so no page shows below it when a phone hides its address bar */
+  /* while the opening plays, the section fills the screen */
+  .inv.gs { height: 100svh; min-height: 560px; padding: 0; }
+  /* the cover: a sage velvet gatefold with a gold monogram split down the middle; its two doors swing open in 3D */
+  .inv-cover { display: none; }
+  .inv.gs .inv-cover { display: block; position: absolute; z-index: 5; width: var(--cw); height: calc(var(--cw) * 377 / 270);
+    left: calc(50% - var(--cw) / 2); top: calc(50% - var(--cw) * 377 / 540); transform-style: preserve-3d; pointer-events: none; }
+  .inv-cover .door { position: absolute; top: 0; bottom: 0; width: 50%; overflow: hidden; backface-visibility: hidden; will-change: transform;
+    background: radial-gradient(120% 70% at 50% 40%, #3d5a47 0%, #2a4434 45%, #1c3025 100%);
+    box-shadow: inset 0 0 0 1px rgba(226, 202, 140, .55), inset 0 0 0 7px rgba(28, 48, 37, .9), inset 0 0 0 8px rgba(226, 202, 140, .3), 0 30px 60px -25px rgba(0, 0, 0, .8); }
+  .inv-cover .door.l { left: 0; transform-origin: 0 50%; border-radius: 4px 0 0 4px; }
+  .inv-cover .door.r { right: 0; transform-origin: 100% 50%; border-radius: 0 4px 4px 0; }
+  .inv-cover .mono { position: absolute; top: 50%; width: 200%; transform: translateY(-50%); text-align: center; white-space: nowrap;
+    font-family: "Bodoni Moda", serif; font-weight: 500; font-size: calc(var(--cw) * .2); letter-spacing: -.01em;
+    background: linear-gradient(100deg, #b79f5c 0%, #f4e2a6 35%, #c5a862 55%, #f2deaa 75%, #b79f5c 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .inv-cover .mono em { font-family: "Allura", cursive; font-style: normal; font-size: .62em; padding: 0 .05em; }
+  .inv-cover .door.l .mono { left: 0; } .inv-cover .door.r .mono { left: -100%; }
+  .inv-cover .shine { position: absolute; inset: 0; overflow: hidden; border-radius: 4px; }
+  .inv-cover .shine::before { content: ""; position: absolute; top: -20%; bottom: -20%; left: 0; width: 45%; transform: translateX(var(--sx, -120%)) skewX(-18deg);
+    background: linear-gradient(90deg, rgba(255, 236, 180, 0), rgba(255, 236, 180, .28), rgba(255, 236, 180, 0)); }
   @media (max-width: 759.98px) {
     .inv.gs .inv-stage { --cw: min(80vw, 400px, calc((100svh - 150px) * 270 / 377)); display: block; width: var(--cw); height: calc(var(--cw) * 377 / 270); }
     .inv.gs .inv-card { position: absolute; inset: 0; }
   }
-  /* Scroll film: the Flow video of the cards, painted frame by frame on a canvas as the guest scrolls; at its end
-     the real cards fade in exactly over the filmed ones (positions measured from the film), so the text is sharp.
-     Phones get their own cut that follows the invitation; a still shade melts its top and bottom into the stage. */
-  .inv-canvas, .inv-fade { display: none; }
-  .inv.gs { background: #18271e; }
-  .inv.gs .inv-canvas { display: block; position: absolute; }
-  .inv.gs .inv-fade { display: block; position: absolute; left: 0; right: 0; height: 0; pointer-events: none; }
-  .inv.gs .inv-fade.top { background: linear-gradient(#18271e, rgba(24, 39, 30, .86) 22%, rgba(24, 39, 30, .5) 52%, rgba(24, 39, 30, .16) 80%, rgba(24, 39, 30, 0)); }
-  .inv.gs .inv-fade.bottom { background: linear-gradient(rgba(24, 39, 30, 0), rgba(24, 39, 30, .16) 20%, rgba(24, 39, 30, .5) 48%, rgba(24, 39, 30, .86) 78%, #18271e); }
-  .inv.gs .inv-mark { display: none; }
-  .inv.gs .inv-stage { position: absolute; inset: 0; display: block; width: auto; height: auto; perspective: none; }
-  .inv.gs .inv-card { position: absolute; inset: auto; opacity: 0; visibility: hidden; transform-origin: 0 0; }
-  .inv.gs .inv-std .lift { display: none; }
   /* the card's own type, as designed */
   .c-names { font-family: "Bodoni Moda", "Noto Serif Gujarati", serif; font-variation-settings: "opsz" 11; font-weight: 500; fill: url(#foil); }
   .c-caps { font-family: "Cormorant SC", "Noto Serif Gujarati", serif; font-weight: 600; fill: #ab9e68; letter-spacing: .25px; }
@@ -508,9 +512,12 @@
          slides it across, and sets the two side by side (one after the other on phones). -->
     <section class="inv" id="inv">
       <div class="inv-mark" aria-hidden="true">T<em>&amp;</em>A</div>
-      <canvas class="inv-canvas" id="invCanvas" aria-hidden="true"></canvas>
-      <div class="inv-fade top" aria-hidden="true"></div><div class="inv-fade bottom" aria-hidden="true"></div>
       <div class="inv-stage">
+        <div class="inv-cover" aria-hidden="true">
+          <div class="door l"><span class="mono">T<em>&amp;</em>A</span></div>
+          <div class="door r"><span class="mono">T<em>&amp;</em>A</span></div>
+          <i class="shine"></i>
+        </div>
         <div class="inv-card inv-main">
           <svg viewBox="387 63 270 377" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Invitation to the engagement ceremony of Twinkal Patel and Ashay Patel, Sunday 29 November 2026, 10 am">
             <rect x="387" y="63" width="270" height="377" fill="#fbfbf7"/>
@@ -774,132 +781,60 @@ function optionalImage(enabled, img, onOk) {
 optionalImage(CONFIG.photos.bride, document.querySelector("#pBride img"), () => document.getElementById("pBride").classList.add("has-photo"));
 optionalImage(CONFIG.photos.groom, document.querySelector("#pGroom img"), () => document.getElementById("pGroom").classList.add("has-photo"));
 
-/* ---------- the invitation's scroll film ----------
-   ScrollTrigger pins the section and maps the scroll to the Flow film's 96 frames, drawn on a canvas (smooth on
-   every phone, unlike scrubbing a <video>). At the end the real cards fade in exactly over the filmed ones; on
-   phones the invitation then comes forward, large enough to read. Without GSAP (or with reduced motion) the two
-   cards simply sit side by side. */
+/* ---------- the invitation's opening ----------
+   A sage velvet cover with a gold T&A sits closed; a ray of light sweeps across it and its two doors swing open in
+   3D to reveal the Save the Date card. On wide screens the two cards then fan out side by side; on a phone the Save
+   the Date turns like a page and the invitation turns into view. Only real elements move (transforms and opacity),
+   so it is smooth on every phone, in English or Gujarati. It plays once, when the section is on screen; afterwards
+   the cards simply stay in their final places. Without GSAP, or with reduced motion, the cards sit side by side. */
 addEventListener("DOMContentLoaded", () => {
   const sec = document.getElementById("inv");
-  if (!window.gsap || !window.ScrollTrigger || html.classList.contains("still") || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  gsap.registerPlugin(ScrollTrigger);
-  ScrollTrigger.config({ ignoreMobileResize: true });
-  const RENDER = new URLSearchParams(location.search).has("render");
-  if (RENDER) html.classList.add("render");
+  const done = () => { sec.dataset.done = 1; document.dispatchEvent(new Event("invdone")); };
+  if (!window.gsap || html.classList.contains("still") || matchMedia("(prefers-reduced-motion: reduce)").matches) { sec.dataset.done = 1; return; }
   sec.classList.add("gs");
-  const cv = document.getElementById("invCanvas"), cx = cv.getContext("2d", { alpha: false });
-  const std = sec.querySelector(".inv-std"), main = sec.querySelector(".inv-main");
-  const fadeTop = sec.querySelector(".inv-fade.top"), fadeBot = sec.querySelector(".inv-fade.bottom");
-  const COUNT = 96;
-  // the film is 1920x1080; phones get an 860x1080 window that follows the invitation card (at x=956 by the end)
-  const CUTS = { wide: { dir: "wide", sx: 0, sw: 1920, imgW: 1280 }, tall: { dir: "tall", sx: 945, sw: 860, imgW: 860 } };
-  // where the cards sit in the film's last frame (measured), in film pixels
-  const STD_RECT = [346, 121, 603, 839], MAIN_RECT = [994, 120, 602, 838];
-  let cut, blobs = [], cur = -1, geo = null, want = 0, filmFetch = false, busy = 0, played = false;
-  const bmps = new Map();
-  // the frames download once the box is opened, so they never compete with the opening film itself
-  document.addEventListener("openbox", () => { if (!filmFetch) { filmFetch = true; load(cut); } }, { once: true });
-
-  // frames arrive as compressed files; only those around the current one are decoded, ahead of the scroll and off
-  // the main thread, at exactly the size they are drawn, so painting a frame is a plain copy and memory stays small
-  function load(c) {
-    const set = blobs = new Array(COUNT); clearBitmaps();
-    const order = [0, COUNT - 1]; for (let k = 1; k < COUNT - 1; k++) order.push(k);
-    let next = 0, got = 0;
-    const one = () => { if (next >= order.length || set !== blobs) return; const k = order[next++];
-      fetch(`assets/inv/${c.dir}/${String(k).padStart(3, "0")}.webp`).then(r => r.ok ? r.blob() : null).catch(() => null).then(b => {
-        if (set !== blobs) return;
-        if (b) { set[k] = b; sec.dataset.frames = ++got; prime(); }
-        one(); }); };
-    for (let n = 0; n < 6; n++) one();
-  }
-  function clearBitmaps() { bmps.forEach(b => b && b.close && b.close()); bmps.clear(); cur = -1; }
-  function decode(b) {
-    const { bw, bh } = geo;
-    if (window.createImageBitmap) return createImageBitmap(b, { resizeWidth: bw, resizeHeight: bh, resizeQuality: "high" }).catch(() => createImageBitmap(b)).catch(() => null);
-    return new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = URL.createObjectURL(b); });
-  }
-  function prime() {
-    if (!geo) return;
-    for (const [k, b] of bmps) if (k < want - 8 || k > want + 12) { if (b && b.close) b.close(); bmps.delete(k); }
-    const todo = [want]; for (let d = 1; d <= 12; d++) { todo.push(want + d); if (d <= 8) todo.push(want - d); }
-    for (const k of todo) {
-      if (busy >= 2) return;
-      if (k < 0 || k >= COUNT || !blobs[k] || bmps.has(k)) continue;
-      busy++; bmps.set(k, null); const set = blobs, g = geo;
-      decode(blobs[k]).then(b => {
-        busy--;
-        if (set !== blobs || g !== geo || !bmps.has(k)) { if (b && b.close) b.close(); }
-        else { bmps.set(k, b); if (b && (cur < 0 || Math.abs(k - want) < Math.abs(cur - want))) draw(want, true); }
-        prime(); });
+  const std = sec.querySelector(".inv-std"), main = sec.querySelector(".inv-main"), lift = std.querySelector(".lift");
+  const cover = sec.querySelector(".inv-cover"), doorL = cover.querySelector(".door.l"), doorR = cover.querySelector(".door.r"), shine = cover.querySelector(".shine");
+  const rings = sec.querySelectorAll(".c-ring"), gem = sec.querySelector(".c-gem");
+  let played = false, current = null;
+  gsap.matchMedia().add({ wide: "(min-width: 760px)", narrow: "(max-width: 759.98px)" }, ctx => {
+    const wide = ctx.conditions.wide;
+    const tl = gsap.timeline({ paused: true, defaults: { ease: "none" }, onComplete: () => { played = true; done(); } });
+    // the cards wait stacked under the cover (wide screens: both in the centre, like the folded print)
+    const half = () => wide ? (main.offsetLeft - std.offsetLeft) / 2 : 0;
+    // (cards fade by opacity only, never hidden outright: their gold lettering shares one gradient definition)
+    tl.set(std, { x: half, scale: .94, opacity: 1 }, 0)
+      .set(main, { x: () => -half(), scale: .9, opacity: wide ? 1 : 0 }, 0)
+    // 1. the cover settles towards the guest while a ray of light crosses the monogram
+      .fromTo(cover, { scale: .9, y: 24, autoAlpha: 0 }, { scale: 1, y: 0, autoAlpha: 1, duration: .9, ease: "power3.out" }, 0)
+      .fromTo(shine, { "--sx": "-120%" }, { "--sx": "260%", duration: 1.3, ease: "power2.inOut" }, .5)
+    // 2. the doors swing open in 3D, and the Save the Date rises from inside
+      .to(doorL, { rotationY: -112, duration: 1.5, ease: "power3.inOut" }, 1.6)
+      .to(doorR, { rotationY: 112, duration: 1.5, ease: "power3.inOut" }, 1.6)
+      .to(cover, { autoAlpha: 0, duration: .5, ease: "power1.in" }, 2.7)
+      .to(std, { scale: 1, duration: 1.3, ease: "power3.out" }, 2.1)
+      .fromTo(lift, { opacity: 0 }, { opacity: 1, duration: .8 }, 2.1)
+      .fromTo(rings, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: .8, stagger: .15 }, 2.5)
+      .fromTo(gem, { opacity: 0 }, { opacity: 1, duration: .3 }, 3.2);
+    if (wide) {
+      // 3. the two cards fan out and settle side by side
+      tl.to(std, { x: 0, duration: 1.6, ease: "power3.inOut" }, 3.7)
+        .to(std, { keyframes: [{ rotationZ: -3, rotationY: -14, duration: .8, ease: "sine.inOut" }, { rotationZ: 0, rotationY: 0, duration: .8, ease: "sine.inOut" }] }, 3.7)
+        .to(main, { x: 0, scale: 1, duration: 1.6, ease: "power3.inOut" }, 3.7)
+        .to(lift, { opacity: 0, duration: .8 }, 4.6);
+    } else {
+      // 3. on a phone the Save the Date turns like a page, and the invitation turns into view in its place
+      tl.to(std, { rotationY: -90, duration: .6, ease: "power2.in" }, 4.0)
+        .set(std, { opacity: 0 }, 4.6)
+        .fromTo(main, { rotationY: 90, scale: 1, opacity: 1 }, { rotationY: 0, duration: .8, ease: "power2.out", immediateRender: false }, 4.6);
     }
-  }
-  // geometry: the film is fitted to the screen (cover on wide screens, full width on phones), and every card position
-  // is mapped through the same transform, so the real cards land exactly on the filmed ones
-  function layout() {
-    const W = sec.clientWidth, H = sec.clientHeight;
-    const fw = cut.sw, fh = 1080;
-    const s = cut.dir === "wide" ? Math.max(W / fw, H / fh) : W / fw;
-    const dw = fw * s, dh = fh * s, dx = (W - dw) / 2, dy = (H - dh) / 2;
-    // the canvas holds no more pixels than the frames themselves: same sharpness, far less to paint each frame
-    const dpr = Math.min(devicePixelRatio || 1, 2, Math.max(.75, cut.imgW / dw));
-    // the canvas covers only the part of the screen the film shows (on phones, the band across the middle)
-    const cl = Math.max(0, dx), ct = Math.max(0, dy), cw = Math.min(W, dx + dw) - cl, ch = Math.min(H, dy + dh) - ct;
-    Object.assign(cv.style, { left: cl + "px", top: ct + "px", width: cw + "px", height: ch + "px" });
-    cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr);
-    geo = { dpr, dx: dx - cl, dy: dy - ct, dw, dh, bw: Math.round(dw * dpr), bh: Math.round(dh * dpr) };
-    clearBitmaps(); prime();
-    const place = (el, r) => { el.style.left = (dx + (r[0] - cut.sx) * s) + "px"; el.style.top = (dy + r[1] * s) + "px"; el.style.width = (r[2] * s) + "px"; el.style.height = (r[3] * s) + "px"; };
-    place(std, STD_RECT); place(main, MAIN_RECT);
-    const fh2 = Math.round(dh * .105);                     // the film's margin above and below the cards
-    fadeTop.style.top = dy + "px"; fadeTop.style.height = fh2 + "px";
-    fadeBot.style.top = (dy + dh - fh2) + "px"; fadeBot.style.height = fh2 + "px";
-    draw(want, true);
-  }
-  function draw(k, force) {
-    if (k !== want) { want = k; prime(); }
-    let f = -1;                                              // the nearest frame ready to paint
-    for (let d = 0; d < COUNT && f < 0; d++) { if (bmps.get(k - d)) f = k - d; else if (bmps.get(k + d)) f = k + d; }
-    if (f < 0 || (f === cur && !force) || !geo) return;
-    cur = f;
-    const { dpr, dx, dy, dw, dh } = geo;
-    cx.drawImage(bmps.get(f), dx * dpr, dy * dpr, dw * dpr, dh * dpr);
-  }
-
-  gsap.matchMedia().add({ wide: "(min-aspect-ratio: 801/1000)", tall: "(max-aspect-ratio: 800/1000)" }, ctx => {
-    const wide = ctx.conditions.wide, c = wide ? CUTS.wide : CUTS.tall;
-    if (cut !== c) { cut = c; if (filmFetch) load(c); }
-    layout();
-    const film = { f: 0 };
-    // the film plays once: after the guest has scrolled through it, the section simply keeps its last frame and
-    // the sharp cards, so scrolling back up shows the finished invitation instead of the animation again
-    const tl = gsap.timeline({ defaults: { ease: "none" }, paused: played, scrollTrigger: played ? undefined : {
-      trigger: sec, start: "top top", end: () => "+=" + innerHeight * (wide ? 2.2 : 2.6),
-      pin: true, scrub: RENDER ? true : .3, anticipatePin: 1, invalidateOnRefresh: true, fastScrollEnd: true,
-      onRefresh: layout, onLeave: st => { if (!RENDER) finish(st, tl); } } });
-    // 1. the film plays with the scroll
-    tl.to(film, { f: COUNT - 1, duration: 3, onUpdate: () => draw(Math.round(film.f)) }, 0)
-    // 2. the real cards fade in exactly over the filmed ones, so every word is sharp
-      .to([std, main], { autoAlpha: 1, duration: .3 }, 3.05);
-    if (!wide) {
-      // 3. phones: the film settles back, the Save the Date steps aside and the invitation comes forward to read
-      const target = () => { const r = main.getBoundingClientRect(), w = Math.min(innerWidth * .86, (innerHeight - 150) * 270 / 377);
-        return { scale: w / r.width, x: (innerWidth - w) / 2 - parseFloat(main.style.left), y: (innerHeight - w * 377 / 270) / 2 - parseFloat(main.style.top) }; };
-      tl.to(cv, { autoAlpha: 0, duration: .4 }, 3.45)
-        .to(std, { x: () => -innerWidth * .7, rotation: -8, autoAlpha: 0, duration: .7, ease: "power2.in" }, 3.5)
-        .to(main, { x: () => target().x, y: () => target().y, scale: () => target().scale, duration: .8, ease: "power2.inOut" }, 3.55);
-    }
-    tl.to({}, { duration: .5 });
-    if (played) tl.progress(1);
+    tl.to({}, { duration: .3 });
+    if (played) tl.progress(1); else tl.progress(0);
+    current = tl;
   });
-  function finish(st, tl) {
-    if (played) return; played = true;
-    const y = scrollY - (st.end - st.start);              // the page gets shorter by the pinned stretch: keep the view still
-    st.kill(true, true); tl.progress(1);
-    scrollTo({ top: y, behavior: "instant" });
-    ScrollTrigger.refresh();
-  }
-  document.addEventListener("named", () => ScrollTrigger.refresh());
+  // play once the section is (nearly) filling the screen
+  new IntersectionObserver((entries, io) => {
+    if (entries.some(e => e.intersectionRatio > .7) && current && !played) { io.disconnect(); current.play(); }
+  }, { threshold: [.7] }).observe(sec);
 });
 
 /* ---------- the movie: once the names appear, the invitation plays itself ----------
@@ -936,15 +871,11 @@ addEventListener("DOMContentLoaded", () => {
   async function play() {
     playing = true; html.classList.add("movie"); html.style.scrollBehavior = "auto";
     await wait(2000);                                                     // a moment with the names
-    const pin = window.ScrollTrigger && ScrollTrigger.getAll().find(t => t.pin);
-    if (pin) {
-      // the film of the cards; the glide stops just short of its end, then a single step past it lets the section
-      // settle on the finished cards (the page gets shorter then) before the next glide measures anything
-      await glide(pin.start, innerHeight * .9);                          // briskly from the names to the cards
-      await glide(pin.end - 1, innerHeight * .25);                       // the card film itself, unhurried
-      scrollTo(0, pin.end + 2);
-      await wait(2200);
-    }
+    // briskly on to the cards, then rest while they play (and a moment after)
+    const inv = document.getElementById("inv");
+    await glide(scrollY + inv.getBoundingClientRect().top, innerHeight * .9);
+    if (!inv.dataset.done) await Promise.race([new Promise(r => document.addEventListener("invdone", r, { once: true })), wait(10000)]);
+    await wait(2200);
     // every stop shows a whole section between the top buttons and the bottom bar; a section taller than that is
     // shown from its top, then glides on to its end, so nothing is ever cut off on any screen
     const sections = [document.getElementById("duo").closest("section"), document.getElementById("cd").closest("section"),
@@ -1133,6 +1064,5 @@ applyLang();
 tick();
 </script>
 <script src="assets/vendor/gsap.min.js" defer></script>
-<script src="assets/vendor/ScrollTrigger.min.js" defer></script>
 </body>
 </html>
