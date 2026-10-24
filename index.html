@@ -299,20 +299,20 @@
     .inv-stage { --cw: min(40vw, 420px, calc((100svh - 100px) * 270 / 377)); flex-direction: row; gap: clamp(16px, 4vw, 40px); }
   }
   /* while the scroll animation runs, the section fills the screen and is held in place (GSAP pins it) */
-  .inv.gs { height: 100svh; min-height: 560px; padding: 0; }
+  .inv.gs { height: 100vh; height: 100lvh; min-height: 560px; padding: 0; }   /* the tallest screen height, so no page shows below it when a phone hides its address bar */
   @media (max-width: 759.98px) {
     .inv.gs .inv-stage { --cw: min(80vw, 400px, calc((100svh - 150px) * 270 / 377)); display: block; width: var(--cw); height: calc(var(--cw) * 377 / 270); }
     .inv.gs .inv-card { position: absolute; inset: 0; }
   }
   /* Scroll film: the Flow video of the cards, painted frame by frame on a canvas as the guest scrolls; at its end
      the real cards fade in exactly over the filmed ones (positions measured from the film), so the text is sharp.
-     Phones show a 6:5 cut of the film across the width; a still shade melts its top and bottom into the stage. */
+     Phones get their own cut that follows the invitation; a still shade melts its top and bottom into the stage. */
   .inv-canvas, .inv-fade { display: none; }
   .inv.gs { background: #18271e; }
-  .inv.gs .inv-canvas { display: block; position: absolute; inset: 0; width: 100%; height: 100%; }
+  .inv.gs .inv-canvas { display: block; position: absolute; }
   .inv.gs .inv-fade { display: block; position: absolute; left: 0; right: 0; height: 0; pointer-events: none; }
-  .inv.gs .inv-fade.top { background: linear-gradient(#18271e, rgba(24, 39, 30, 0)); }
-  .inv.gs .inv-fade.bottom { background: linear-gradient(rgba(24, 39, 30, 0), #18271e); }
+  .inv.gs .inv-fade.top { background: linear-gradient(#18271e, rgba(24, 39, 30, .86) 22%, rgba(24, 39, 30, .5) 52%, rgba(24, 39, 30, .16) 80%, rgba(24, 39, 30, 0)); }
+  .inv.gs .inv-fade.bottom { background: linear-gradient(rgba(24, 39, 30, 0), rgba(24, 39, 30, .16) 20%, rgba(24, 39, 30, .5) 48%, rgba(24, 39, 30, .86) 78%, #18271e); }
   .inv.gs .inv-mark { display: none; }
   .inv.gs .inv-stage { position: absolute; inset: 0; display: block; width: auto; height: auto; perspective: none; }
   .inv.gs .inv-card { position: absolute; inset: auto; opacity: 0; visibility: hidden; transform-origin: 0 0; }
@@ -787,24 +787,48 @@ addEventListener("DOMContentLoaded", () => {
   const std = sec.querySelector(".inv-std"), main = sec.querySelector(".inv-main");
   const fadeTop = sec.querySelector(".inv-fade.top"), fadeBot = sec.querySelector(".inv-fade.bottom");
   const COUNT = 96;
-  // the film is 1920x1080; phones use the 1300x1080 slice starting at x=330 (it holds both cards throughout)
-  const CUTS = { wide: { dir: "wide", sx: 0, sw: 1920, imgW: 1280 }, tall: { dir: "tall", sx: 330, sw: 1300, imgW: 640 } };
+  // the film is 1920x1080; phones get an 860x1080 window that follows the invitation card (at x=956 by the end)
+  const CUTS = { wide: { dir: "wide", sx: 0, sw: 1920, imgW: 1280 }, tall: { dir: "tall", sx: 945, sw: 860, imgW: 860 } };
   // where the cards sit in the film's last frame (measured), in film pixels
   const STD_RECT = [346, 121, 603, 839], MAIN_RECT = [994, 120, 602, 838];
-  let cut, frames = [], cur = -1, geo = null, want = 0, filmFetch = false;
+  let cut, blobs = [], cur = -1, geo = null, want = 0, filmFetch = false, busy = 0;
+  const bmps = new Map();
   // the frames download once the box is opened, so they never compete with the opening film itself
   document.addEventListener("openbox", () => { if (!filmFetch) { filmFetch = true; load(cut); } }, { once: true });
 
+  // frames arrive as compressed files; only those around the current one are decoded, ahead of the scroll and off
+  // the main thread, at exactly the size they are drawn, so painting a frame is a plain copy and memory stays small
   function load(c) {
-    const set = frames = new Array(COUNT); cur = -1;
+    const set = blobs = new Array(COUNT); clearBitmaps();
     const order = [0, COUNT - 1]; for (let k = 1; k < COUNT - 1; k++) order.push(k);
     let next = 0, got = 0;
-    const one = () => { if (next >= order.length || set !== frames) return; const k = order[next++], im = new Image();
-      im.decoding = "async"; im.src = `assets/inv/${c.dir}/${String(k).padStart(3, "0")}.webp`;
-      im.onload = () => { (im.decode ? im.decode() : Promise.resolve()).catch(() => {}).then(() => { if (set !== frames) return;
-        set[k] = im; sec.dataset.frames = ++got; if (k <= want && k > cur) draw(want, true); one(); }); };
-      im.onerror = one; };
+    const one = () => { if (next >= order.length || set !== blobs) return; const k = order[next++];
+      fetch(`assets/inv/${c.dir}/${String(k).padStart(3, "0")}.webp`).then(r => r.ok ? r.blob() : null).catch(() => null).then(b => {
+        if (set !== blobs) return;
+        if (b) { set[k] = b; sec.dataset.frames = ++got; prime(); }
+        one(); }); };
     for (let n = 0; n < 6; n++) one();
+  }
+  function clearBitmaps() { bmps.forEach(b => b && b.close && b.close()); bmps.clear(); cur = -1; }
+  function decode(b) {
+    const { bw, bh } = geo;
+    if (window.createImageBitmap) return createImageBitmap(b, { resizeWidth: bw, resizeHeight: bh, resizeQuality: "high" }).catch(() => createImageBitmap(b)).catch(() => null);
+    return new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = URL.createObjectURL(b); });
+  }
+  function prime() {
+    if (!geo) return;
+    for (const [k, b] of bmps) if (k < want - 8 || k > want + 12) { if (b && b.close) b.close(); bmps.delete(k); }
+    const todo = [want]; for (let d = 1; d <= 12; d++) { todo.push(want + d); if (d <= 8) todo.push(want - d); }
+    for (const k of todo) {
+      if (busy >= 2) return;
+      if (k < 0 || k >= COUNT || !blobs[k] || bmps.has(k)) continue;
+      busy++; bmps.set(k, null); const set = blobs, g = geo;
+      decode(blobs[k]).then(b => {
+        busy--;
+        if (set !== blobs || g !== geo || !bmps.has(k)) { if (b && b.close) b.close(); }
+        else { bmps.set(k, b); if (b && (cur < 0 || Math.abs(k - want) < Math.abs(cur - want))) draw(want, true); }
+        prime(); });
+    }
   }
   // geometry: the film is fitted to the screen (cover on wide screens, full width on phones), and every card position
   // is mapped through the same transform, so the real cards land exactly on the filmed ones
@@ -812,26 +836,30 @@ addEventListener("DOMContentLoaded", () => {
     const W = sec.clientWidth, H = sec.clientHeight;
     const fw = cut.sw, fh = 1080;
     const s = cut.dir === "wide" ? Math.max(W / fw, H / fh) : W / fw;
-    const dw = fw * s, dh = fh * s, dx = (W - dw) / 2, dy = cut.dir === "wide" ? (H - dh) / 2 : Math.max(0, (H - dh) * .42);
+    const dw = fw * s, dh = fh * s, dx = (W - dw) / 2, dy = (H - dh) / 2;
     // the canvas holds no more pixels than the frames themselves: same sharpness, far less to paint each frame
     const dpr = Math.min(devicePixelRatio || 1, 2, Math.max(.75, cut.imgW / dw));
-    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
-    geo = { W, H, dpr, s, dx, dy, dw, dh };
+    // the canvas covers only the part of the screen the film shows (on phones, the band across the middle)
+    const cl = Math.max(0, dx), ct = Math.max(0, dy), cw = Math.min(W, dx + dw) - cl, ch = Math.min(H, dy + dh) - ct;
+    Object.assign(cv.style, { left: cl + "px", top: ct + "px", width: cw + "px", height: ch + "px" });
+    cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr);
+    geo = { dpr, dx: dx - cl, dy: dy - ct, dw, dh, bw: Math.round(dw * dpr), bh: Math.round(dh * dpr) };
+    clearBitmaps(); prime();
     const place = (el, r) => { el.style.left = (dx + (r[0] - cut.sx) * s) + "px"; el.style.top = (dy + r[1] * s) + "px"; el.style.width = (r[2] * s) + "px"; el.style.height = (r[3] * s) + "px"; };
     place(std, STD_RECT); place(main, MAIN_RECT);
-    const fh2 = Math.round(dh * .24);
+    const fh2 = Math.round(dh * .105);                     // the film's margin above and below the cards
     fadeTop.style.top = dy + "px"; fadeTop.style.height = fh2 + "px";
     fadeBot.style.top = (dy + dh - fh2) + "px"; fadeBot.style.height = fh2 + "px";
-    cx.fillStyle = "#18271e"; cur = -1; draw(want, true);
+    draw(want, true);
   }
   function draw(k, force) {
-    want = k;
-    let f = k; while (f > 0 && !frames[f]) f--;              // the nearest frame already loaded
-    if (!frames[f] || (f === cur && !force) || !geo) return;
+    if (k !== want) { want = k; prime(); }
+    let f = -1;                                              // the nearest frame ready to paint
+    for (let d = 0; d < COUNT && f < 0; d++) { if (bmps.get(k - d)) f = k - d; else if (bmps.get(k + d)) f = k + d; }
+    if (f < 0 || (f === cur && !force) || !geo) return;
     cur = f;
     const { dpr, dx, dy, dw, dh } = geo;
-    if (cut.dir === "tall") { cx.fillRect(0, 0, cv.width, cv.height); }
-    cx.drawImage(frames[f], dx * dpr, dy * dpr, dw * dpr, dh * dpr);
+    cx.drawImage(bmps.get(f), dx * dpr, dy * dpr, dw * dpr, dh * dpr);
   }
 
   gsap.matchMedia().add({ wide: "(min-aspect-ratio: 801/1000)", tall: "(max-aspect-ratio: 800/1000)" }, ctx => {
