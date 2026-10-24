@@ -434,6 +434,10 @@
   .still .topbar, .still .hint, .still .scroll-cue, .still .quickbar { display: none; }
   .still .pre, .still .post, .still .final { transition: none !important; }
   .render .topbar, .render .quickbar, .render .scroll-cue, .render .hint { display: none !important; }
+  /* while the invitation plays itself, the page holds still under the finger (taps on buttons still work) */
+  html.movie body { touch-action: none; overscroll-behavior: none; }
+  .scene .hint, .scene .scroll-cue { transition: opacity .6s ease; }
+  html.movie .scene .hint, html.movie .scene .scroll-cue { opacity: 0; pointer-events: none; }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
     .rv { opacity: 1; transform: none; }
@@ -714,7 +718,7 @@ const I18N = {
 const params = new URLSearchParams(location.search);
 const GUEST = (params.get("g") || "").replace(/\s+/g, " ").trim().slice(0, 60);
 // ?lang=gu opens the Gujarati version first (used by the sender page for elders)
-let lang = params.get("lang") === "gu" ? "gu" : "en";
+let lang = params.get("lang") === "en" ? "en" : "gu";                 // Gujarati first; English is one tap away
 try { const saved = localStorage.getItem("ta-lang"); if (saved && !params.get("lang")) lang = saved === "gu" ? "gu" : "en"; } catch (e) {}
 const t = (k, vars) => {
   let s = (I18N[lang][k] ?? I18N.en[k] ?? "");
@@ -896,6 +900,45 @@ addEventListener("DOMContentLoaded", () => {
     ScrollTrigger.refresh();
   }
   document.addEventListener("named", () => ScrollTrigger.refresh());
+});
+
+/* ---------- the movie: once the names appear, the invitation plays itself ----------
+   The page glides on its own, slow and eased, through the film of the cards, the portraits, the distance, the
+   countdown and the details, resting at each. Scrolling is held still meanwhile; buttons can still be tapped.
+   At the end the page is the guest's to scroll. */
+addEventListener("DOMContentLoaded", () => {
+  const q = new URLSearchParams(location.search);
+  if (html.classList.contains("still") || q.has("render") || q.has("nomovie") || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  let playing = false;
+  const hold = e => { if (playing) e.preventDefault(); };
+  addEventListener("wheel", hold, { passive: false });
+  addEventListener("touchmove", hold, { passive: false });
+  addEventListener("keydown", e => { if (playing && [" ", "PageDown", "PageUp", "ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) e.preventDefault(); });
+  const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const maxY = () => document.documentElement.scrollHeight - innerHeight;
+  // one eased glide; pxPerSec sets the pace, so long stretches take proportionally longer
+  const glide = (to, pxPerSec) => new Promise(done => {
+    const from = scrollY; to = Math.max(0, Math.min(to, maxY()));
+    const dur = Math.max(1400, Math.abs(to - from) / pxPerSec * 1000), t0 = performance.now();
+    const step = now => { const t = Math.min(1, (now - t0) / dur); scrollTo(0, from + (to - from) * ease(t)); t < 1 ? requestAnimationFrame(step) : done(); };
+    requestAnimationFrame(step);
+  });
+  const centre = el => { const r = el.getBoundingClientRect(); return scrollY + r.top - Math.max(0, (innerHeight - r.height) / 2); };
+  async function play() {
+    playing = true; html.classList.add("movie"); html.style.scrollBehavior = "auto";
+    await wait(2800);                                                     // a moment with the names
+    const pin = window.ScrollTrigger && ScrollTrigger.getAll().find(t => t.pin);
+    if (pin) { await glide(pin.end + 2, innerHeight * .22); await wait(2200); }   // the film of the cards, then the cards
+    const stops = [["duo", 3200], ["distance", 2600], ["cd", 2600], ["details", 3800]];
+    for (const [id, rest] of stops) {
+      const el = document.getElementById(id);
+      if (el) { await glide(centre(el), innerHeight * .4); await wait(rest); }
+    }
+    await glide(maxY(), innerHeight * .4);
+    playing = false; html.classList.remove("movie"); html.style.scrollBehavior = "";
+  }
+  document.addEventListener("named", () => setTimeout(play, 50), { once: true });
 });
 
 /* ---------- two cities: live local time under each portrait ---------- */
